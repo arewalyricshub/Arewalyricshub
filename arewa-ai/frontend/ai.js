@@ -13,7 +13,7 @@ const suggestions = document.querySelectorAll(".suggestion");
 // Za mu saka Render backend URL a nan
 // bayan mun gama backend.
 
-const API_URL = "https://arewalyricshub.onrender.com/api/ai";";
+const API_URL = "https://arewalyricshub.onrender.com/api/ai";
 
 // ======================================
 // ESCAPE HTML
