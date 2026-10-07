@@ -1,1 +1,205 @@
+<!DOCTYPE html><html lang="ha">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Arewa AI | Arewa Lyrics Hub</title>
 
+<meta name="description" content="Arewa AI Assistant - Hausa and English AI assistant by Arewa Lyrics Hub">
+
+<link rel="stylesheet" href="ai.css">
+
+</head><body><!-- HEADER -->
+<header class="ai-header">
+
+    <div class="brand">
+
+        <div class="ai-logo">
+            AI
+        </div>
+
+        <div class="brand-text">
+            <h1>Arewa AI</h1>
+            <p>Arewa Lyrics Hub Assistant</p>
+        </div>
+
+    </div>
+
+    <button class="menu-btn" id="menuBtn">
+        ☰
+    </button>
+
+</header>
+
+
+<!-- MAIN -->
+<main class="ai-container">
+
+    <!-- WELCOME -->
+    <section class="welcome-section">
+
+        <div class="welcome-icon">
+            ✨
+        </div>
+
+        <h2>Assalamu Alaikum 👋</h2>
+
+        <p>
+            Barka da zuwa <strong>Arewa AI</strong>.
+            Zan iya taimaka maka da Hausa lyrics,
+            translation, content ideas, captions da sauran ayyukan kirkira.
+        </p>
+
+    </section>
+
+
+    <!-- QUICK ACTIONS -->
+    <section class="quick-actions">
+
+        <h3>Me kake son yi?</h3>
+
+        <div class="suggestions">
+
+            <button
+                class="suggestion"
+                data-prompt="Rubuta min sabuwar Hausa song lyrics mai kyau game da soyayya."
+            >
+                🎵
+                <span>
+                    <strong>Rubuta Lyrics</strong>
+                    <small>Ƙirƙiri sabuwar waka</small>
+                </span>
+            </button>
+
+
+            <button
+                class="suggestion"
+                data-prompt="Fassara wannan rubutu daga Hausa zuwa English:"
+            >
+                🌍
+                <span>
+                    <strong>Fassara</strong>
+                    <small>Hausa ↔ English</small>
+                </span>
+            </button>
+
+
+            <button
+                class="suggestion"
+                data-prompt="Bani ideas 10 na Hausa/Arewa TikTok content da zan iya yi."
+            >
+                💡
+                <span>
+                    <strong>Content Ideas</strong>
+                    <small>Sabbin ideas</small>
+                </span>
+            </button>
+
+
+            <button
+                class="suggestion"
+                data-prompt="Rubuta min professional caption na tallata wani Hausa artist."
+            >
+                📢
+                <span>
+                    <strong>Artist Promotion</strong>
+                    <small>Tallata artist</small>
+                </span>
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- CHAT -->
+    <section class="chat-card">
+
+        <div class="chat-header">
+
+            <div class="status-dot"></div>
+
+            <div>
+                <strong>Arewa AI</strong>
+                <small>Online Assistant</small>
+            </div>
+
+        </div>
+
+
+        <!-- MESSAGES -->
+        <div
+            id="messages"
+            class="messages"
+        >
+
+            <div class="message ai-message">
+
+                <div class="avatar">
+                    AI
+                </div>
+
+                <div class="bubble">
+                    Sannu! 👋<br><br>
+
+                    Ni ne <strong>Arewa AI</strong>.
+                    Me kake son mu yi yau?
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- TYPING -->
+        <div
+            id="typing"
+            class="typing"
+        >
+            <span></span>
+            <span></span>
+            <span></span>
+
+            Arewa AI yana tunani...
+        </div>
+
+
+        <!-- INPUT -->
+        <form
+            id="chatForm"
+            class="chat-form"
+        >
+
+            <textarea
+                id="userInput"
+                rows="1"
+                maxlength="4000"
+                placeholder="Rubuta tambayarka anan..."
+                autocomplete="off"
+                required
+            ></textarea>
+
+
+            <button
+                type="submit"
+                id="sendBtn"
+                aria-label="Aika saƙo"
+            >
+                ➤
+            </button>
+
+        </form>
+
+
+        <div class="chat-footer">
+            Arewa AI na iya yin kuskure. Ka tabbatar da muhimman bayanai.
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- JAVASCRIPT -->
+<script src="ai.js"></script>
+
+</body>
+               </html>
