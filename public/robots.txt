@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://arewalyricshub.github.io/AREWA-LYRICS-HUB/sitemap.xml
