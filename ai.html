@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Arewa Lyrics Hub AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #071c16;
+            color: white;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: #0b3d2e;
+            padding: 18px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .header h1 {
+            font-size: 22px;
+        }
+
+        .header p {
+            margin-top: 5px;
+            color: #b8d8cd;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 25px 15px;
+        }
+
+        .welcome {
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        .welcome h2 {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .welcome span {
+            color: #43d17d;
+        }
+
+        .welcome p {
+            color: #b8d8cd;
+        }
+
+        .chat-box {
+            background: #0c2920;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 18px;
+            min-height: 450px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            padding: 14px 16px;
+            border-radius: 14px;
+            margin-bottom: 14px;
+            max-width: 85%;
+            line-height: 1.6;
+        }
+
+        .ai-message {
+            background: #123d30;
+            align-self: flex-start;
+        }
+
+        .user-message {
+            background: #0b3d2e;
+            align-self: flex-end;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+            padding-top: 20px;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #285547;
+            background: #071c16;
+            color: white;
+            outline: none;
+        }
+
+        .input-area button {
+            padding: 15px 22px;
+            border: none;
+            border-radius: 12px;
+            background: #43d17d;
+            color: #062015;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .input-area button:hover {
+            opacity: 0.9;
+        }
+
+        @media (max-width: 600px) {
+            .welcome h2 {
+                font-size: 24px;
+            }
+
+            .message {
+                max-width: 95%;
+            }
+
+            .input-area {
+                flex-direction: column;
+            }
+
+            .input-area button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+        <h1>Arewa Lyrics Hub AI</h1>
+        <p>Your intelligent Hausa & Arewa music assistant</p>
+    </header>
+
+    <main class="container">
+
+        <section class="welcome">
+            <h2>Welcome to <span>Arewa AI</span></h2>
+            <p>
+                Ask about Hausa lyrics, artists, music, songwriting and more.
+            </p>
+        </section>
+
+        <section class="chat-box">
+
+            <div class="message ai-message">
+                <strong>Arewa AI</strong><br>
+                Sannu! 👋 Ni ne Arewa Lyrics Hub AI.
+                Ta yaya zan taimaka maka yau?
+            </div>
+
+            <div class="input-area">
+                <input
+                    type="text"
+                    id="userInput"
+                    placeholder="Rubuta tambayarka a nan..."
+                >
+
+                <button onclick="sendMessage()">
+                    Send
+                </button>
+            </div>
+
+        </section>
+
+    </main>
+
+    <script>
+
+        function sendMessage() {
+
+            const input = document.getElementById("userInput");
+            const message = input.value.trim();
+
+            if (message === "") {
+                return;
+            }
+
+            const chatBox = document.querySelector(".chat-box");
+
+            const userMessage = document.createElement("div");
+            userMessage.className = "message user-message";
+            userMessage.innerHTML =
+                "<strong>You</strong><br>" + message;
+
+            chatBox.insertBefore(
+                userMessage,
+                document.querySelector(".input-area")
+            );
+
+            input.value = "";
+
+            const aiMessage = document.createElement("div");
+            aiMessage.className = "message ai-message";
+            aiMessage.innerHTML =
+                "<strong>Arewa AI</strong><br>" +
+                "Na karɓi tambayarka. AI connection za mu haɗa a mataki na gaba.";
+
+            chatBox.insertBefore(
+                aiMessage,
+                document.querySelector(".input-area")
+            );
+        }
+
+    </script>
+
+</body>
+</html>
