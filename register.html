@@ -1,0 +1,142 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#073b2a">
+  <title>Create Account | Arewa Lyrics Hub</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,sans-serif;background:#071b15;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+    .card{width:100%;max-width:440px;background:#10271f;border:1px solid #294638;border-radius:18px;padding:28px;box-shadow:0 18px 50px #0005}
+    .brand{text-align:center;margin-bottom:25px}
+    .brand h1{font-size:25px;color:#e6c75a;margin:0 0 8px}
+    .brand p,.hint{color:#b7c8bf;font-size:14px;line-height:1.6}
+    label{display:block;margin:16px 0 7px;font-size:14px}
+    input{width:100%;padding:13px;border-radius:9px;border:1px solid #426052;background:#091b14;color:#fff;font-size:15px;outline:none}
+    input:focus{border-color:#e6c75a}
+    button{width:100%;margin-top:22px;padding:14px;background:#e6c75a;color:#142219;border:0;border-radius:9px;font-weight:bold;font-size:16px;cursor:pointer}
+    button:disabled{opacity:.6;cursor:wait}
+    #message{display:none;padding:12px;border-radius:8px;margin-top:16px;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+    .links{text-align:center;margin-top:20px;font-size:14px}
+    a{color:#e6c75a}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <header class="brand">
+      <h1>AREWA LYRICS HUB</h1>
+      <p>Create your member account</p>
+    </header>
+
+    <form id="registerForm">
+      <label for="full_name">Full name</label>
+      <input id="full_name" name="full_name" autocomplete="name" required maxlength="100" placeholder="Enter your full name">
+
+      <label for="email">Email address</label>
+      <input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters">
+
+      <label for="confirm_password">Confirm password</label>
+      <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" minlength="8" required placeholder="Enter password again">
+
+      <button id="submitButton" type="submit">Create Account</button>
+      <div id="message" role="status" aria-live="polite"></div>
+    </form>
+
+    <p class="hint">New applications require admin approval before member access is granted.</p>
+    <div class="links">Already registered? <a href="login.html">Log in</a></div>
+  </main>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    // Replace these two placeholders with your existing Supabase project details.
+    const SUPABASE_URL = "YOUR_SUPABASE_PROJECT_URL";
+    const SUPABASE_PUBLISHABLE_KEY = "YOUR_SUPABASE_PUBLISHABLE_KEY";
+
+    const form = document.getElementById("registerForm");
+    const button = document.getElementById("submitButton");
+    const message = document.getElementById("message");
+
+    function showMessage(text, success = false) {
+      message.style.display = "block";
+      message.style.background = success ? "#173d2a" : "#482522";
+      message.style.color = "#fff";
+      message.textContent = text;
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const fullName = document.getElementById("full_name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirm_password").value;
+
+      if (fullName.length < 2) {
+        showMessage("Please enter your full name.");
+        return;
+      }
+
+      if (password.length < 8) {
+        showMessage("Your password must contain at least 8 characters.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        showMessage("The passwords do not match.");
+        return;
+      }
+
+      if (
+        SUPABASE_URL.includes("YOUR_SUPABASE") ||
+        SUPABASE_PUBLISHABLE_KEY.includes("YOUR_SUPABASE")
+      ) {
+        showMessage("Setup is incomplete. Add your Supabase project URL and publishable key first.");
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Creating account...";
+
+      try {
+        const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: fullName },
+            emailRedirectTo: window.location.origin + window.location.pathname.replace(/register\.html$/, "login.html")
+          }
+        });
+
+        if (error) throw error;
+
+        if (data.user && data.session) {
+          showMessage(
+            "Your account was created. Check your profile status and wait for admin approval before accessing member features.",
+            true
+          );
+        } else {
+          showMessage(
+            "Registration request received. Check your email for the verification link. After verifying, your application will await admin approval.",
+            true
+          );
+        }
+
+        form.reset();
+      } catch (error) {
+        showMessage(error.message || "Registration failed. Please try again.");
+      } finally {
+        button.disabled = false;
+        button.textContent = "Create Account";
+      }
+    });
+  </script>
+</body>
+</html>
