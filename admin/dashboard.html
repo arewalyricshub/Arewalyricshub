@@ -347,7 +347,55 @@ card.appendChild(actions);
         $("refreshButton").disabled = false;
       }
     }
+   
+async function reviewMember(memberId, decision, buttons) {
+  buttons.forEach((button) => {
+    button.disabled = true;
+  });
 
+  showMessage(
+    decision === "active"
+      ? "Approving membership…"
+      : "Rejecting membership…"
+  );
+
+  try {
+    const { data, error } = await supabase.rpc(
+      "review_membership",
+      {
+        p_member_id: memberId,
+        p_decision: decision
+      }
+    );
+
+    if (error) throw error;
+
+    if (data !== true) {
+      throw new Error(
+        "Ba a canza matsayin memban ba. Wataƙila an riga an yi review ko Member ID ɗin bai dace ba."
+      );
+    }
+
+    showMessage(
+      decision === "active"
+        ? "An amince da rajistar memban cikin nasara."
+        : "An ƙi rajistar memban cikin nasara.",
+      "success"
+    );
+
+    await loadPendingMembers();
+  } catch (error) {
+    showMessage(
+      error.message || "An samu kuskure yayin review.",
+      "error"
+    );
+  } finally {
+    buttons.forEach((button) => {
+      button.disabled = false;
+    });
+  }
+}
+    
     if (
       SUPABASE_URL.includes("YOUR_SUPABASE") ||
       SUPABASE_KEY.includes("YOUR_SUPABASE")
