@@ -395,3 +395,66 @@ async function loadProfile() {
 $("editButton").addEventListener("click", () => {
   $("editPanel").scrollIntoView({behavior:"smooth", block:"start"});
   $("fullName").focus({preventScroll:true})
+});
+$("cancelButton").addEventListener("click", () => {
+  $("editMessage").hidden = true;
+  renderProfile();
+});
+
+$("editForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  const button = $("saveButton");
+  button.disabled = true;
+  button.textContent = "Saving…";
+  $("editMessage").hidden = true;
+
+  const updates = {
+    full_name: $("fullName").value.trim(),
+    display_name: $("displayName").value.trim() || null,
+    phone: $("phone").value.trim() || null,
+    city: $("city").value.trim() || null,
+    state: $("state").value.trim() || null,
+    tiktok_username: $("tiktok").value.trim() || null,
+    instagram_username: $("instagram").value.trim() || null,
+    bio: $("bio").value.trim() || null,
+    updated_at: new Date().toISOString()
+  };
+
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .update(updates)
+      .eq("id", currentUser.id)
+      .select("id, full_name, display_name, email, phone, bio, city, state, tiktok_username, instagram_username, role, status, member_id, membership_type")
+      .single();
+
+    if (error) throw error;
+    currentProfile = data;
+    renderProfile();
+    $("editMessage").hidden = false;
+    $("editMessage").className = "notice success";
+    $("editMessage").textContent = "Your profile has been updated successfully.";
+  } catch (error) {
+    $("editMessage").hidden = false;
+    $("editMessage").className = "notice error";
+    $("editMessage").textContent = error.message || "Could not save profile changes.";
+  } finally {
+    button.disabled = false;
+    button.textContent = "▣ Save Changes";
+  }
+});
+
+$("searchForm").addEventListener("submit", event => {
+  event.preventDefault();
+  const query = $("searchInput").value.trim();
+  if (query) {
+    window.location.href = "index.html?search=" + encodeURIComponent(query);
+  }
+});
+
+loadProfile().catch(error => {
+  showMessage("Unexpected error", error.message || "Something went wrong while loading your profile.", "error");
+});
+</script>
+</body>
+</html>
