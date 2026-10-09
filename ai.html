@@ -159,8 +159,8 @@
 
             <div class="message ai-message">
                 <strong>Arewa AI</strong><br>
-                Sannu! 👋 Ni ne Arewa Lyrics Hub AI.
-                Ta yaya zan taimaka maka yau?
+                Hello 👋 I'm Arewa Lyrics Hub AI.
+                How Can I Help You Today?
             </div>
 
             <div class="input-area">
@@ -208,7 +208,7 @@
             aiMessage.className = "message ai-message";
             aiMessage.innerHTML =
                 "<strong>Arewa AI</strong><br>" +
-                "Na karɓi tambayarka. AI connection za mu haɗa a mataki na gaba.";
+                "Accepted. AI connection za mu haɗa a mataki na gaba.";
 
             chatBox.insertBefore(
                 aiMessage,
@@ -255,7 +255,7 @@ async function sendMessage() {
 
     loadingMessage.innerHTML =
         "<strong>Arewa AI</strong><br>" +
-        "Ana tunani...";
+        "Searching...";
 
     chatBox.insertBefore(loadingMessage, inputArea);
 
@@ -296,8 +296,8 @@ async function sendMessage() {
 
         loadingMessage.innerHTML =
             "<strong>Arewa AI</strong><br>" +
-            "Yi hakuri, an samu matsala wajen haɗawa da AI. " +
-            "Ka sake gwadawa.";
+            "Sorry, There was a problem connecting... " +
+            "Try Again.";
 
     }
 }
