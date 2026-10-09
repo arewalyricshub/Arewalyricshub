@@ -1,0 +1,397 @@
+HTML
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#003d2e">
+<title>My Profile | Arewa Lyrics Hub</title>
+<style>
+:root{--green:#004532;--deep:#002f27;--bright:#00bd70;--pale:#e1f9eb;--text:#142b25;--muted:#718078;--line:#e0e8e3;--white:#fff}
+*{box-sizing:border-box}
+body{margin:0;background:#f4f7f5;color:var(--text);font-family:Arial,Helvetica,sans-serif}
+button,input,textarea{font:inherit}
+button,a{-webkit-tap-highlight-color:transparent}
+a{color:inherit;text-decoration:none}
+[hidden]{display:none!important}
+.topbar{height:76px;background:var(--deep);color:white;display:flex;align-items:center;gap:24px;padding:0 25px;position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:12px;min-width:270px;font-weight:800;font-size:21px}
+.brand-mark{width:42px;height:42px;border:3px solid #d9fff0;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:22px}
+.brand small{display:block;font-size:11px;font-weight:400;margin-top:4px;color:#d5e9df}
+.search{display:flex;flex:1;max-width:520px;background:white;border-radius:14px;overflow:hidden}
+.search input{min-width:0;width:100%;border:0;padding:14px;color:#263a32;outline:none}
+.search span{background:var(--bright);padding:13px 20px;color:white}
+.toplinks{display:flex;align-items:center;gap:20px;font-size:14px;white-space:nowrap}
+.avatar-small{width:43px;height:43px;border-radius:50%;display:grid;place-items:center;background:var(--bright);font-weight:bold}
+.layout{display:grid;grid-template-columns:235px minmax(0,1fr);min-height:calc(100vh - 76px)}
+.sidebar{background:linear-gradient(160deg,#003b30,#002c25);color:white;padding:28px 16px;display:flex;flex-direction:column}
+.identity{text-align:center;margin-bottom:24px}
+.avatar{height:68px;width:68px;border-radius:50%;background:var(--bright);color:white;display:grid;place-items:center;font-size:25px;font-weight:bold;margin:0 auto 12px}
+.identity strong{display:block;margin-bottom:10px}
+.pill{display:inline-block;border-radius:30px;padding:6px 12px;background:#d6fbe4;color:#08713f;font-size:12px;font-weight:bold}
+.nav{display:grid;gap:8px}
+.nav a{padding:14px 13px;border-radius:10px;display:flex;gap:13px;align-items:center;font-size:14px}
+.nav a.active,.nav a:hover{background:#00895b}
+.nav .symbol{font-size:19px;width:23px;text-align:center}
+.community{margin-top:auto;background:#064b3b;border-radius:13px;padding:18px 14px;line-height:1.6;font-size:13px}
+.community strong{display:block;text-align:center;font-size:16px;margin-bottom:8px}
+.community a{display:block;text-align:center;background:var(--bright);border-radius:8px;padding:10px;margin-top:12px;font-weight:bold}
+main{padding:22px;min-width:0}
+.welcome{background:linear-gradient(110deg,#003b2e,#08764e);color:white;border-radius:15px;padding:24px 26px;display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:20px}
+.welcome h1{font-size:25px;margin:0 0 8px}
+.welcome p{margin:0;color:#e2f5eb;line-height:1.5}
+.quote{text-align:right;max-width:230px;font-size:13px;font-style:italic;line-height:1.6}
+.content-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(300px,.9fr);gap:20px;align-items:start}
+.card{background:white;border:1px solid #e0e7e3;border-radius:15px;padding:20px;box-shadow:0 2px 7px #1233220b;min-width:0}
+.card-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:8px}
+.card-heading h2,.edit-heading h2{font-size:19px;margin:0}
+.btn{border:0;border-radius:9px;padding:12px 15px;background:#00895a;color:white;font-weight:bold;cursor:pointer}
+.btn:hover{filter:brightness(.95)}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.secondary{background:#edf2ef;color:#263b32;border:1px solid #d6dfd9}
+.profile-layout{display:grid;grid-template-columns:205px minmax(0,1fr);gap:18px;padding-top:12px}
+.profile-summary{text-align:center;border-right:1px solid var(--line);padding:5px 15px 10px 0}
+.avatar-large{height:142px;width:142px;border-radius:50%;background:linear-gradient(145deg,#00553c,#002f27);color:white;display:grid;place-items:center;font-size:48px;font-weight:bold;margin:0 auto 16px}
+.profile-summary h3{font-size:21px;margin:0 0 12px;overflow-wrap:anywhere}
+.member-code{margin-top:20px;background:var(--pale);border-radius:10px;padding:13px;text-align:left;font-size:13px;overflow-wrap:anywhere}
+.member-code strong{display:block;margin-top:5px}
+.details{margin:0}
+.detail{display:grid;grid-template-columns: minmax(110px,.8fr) minmax(0,1fr);gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px;overflow-wrap:anywhere}
+.detail dt{color:#43554c}
+.detail dd{margin:0;font-weight:500;line-height:1.5}
+.detail:last-child{border-bottom:0}
+.linklike{color:#0067d9}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}
+.stat{padding:17px 12px;border-radius:13px;background:#ddf8e8;text-align:center}
+.stat:nth-child(2){background:#e1efff}
+.stat:nth-child(3){background:#fff6d7}
+.stat strong{display:block;font-size:25px;margin-bottom:5px}
+.stat span{font-size:12px;line-height:1.4}
+.quicklinks{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px;background:white;border:1px solid var(--line);border-radius:12px;padding:15px}
+.quicklinks a{font-size:13px;color:#245347;padding:5px}
+.edit-heading{display:flex;gap:12px;align-items:center;margin-bottom:7px}
+.muted{color:var(--muted);font-size:13px;line-height:1.6;margin:0 0 17px}
+.notice{padding:13px;border-radius:10px;background:#fff4d9;color:#745000;font-size:13px;line-height:1.6;overflow-wrap:anywhere;margin:12px 0}
+.notice.success{background:#e2f8e9;color:#17633b}
+.notice.error{background:#fff0ed;color:#a12c20}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}
+.field{min-width:0}
+.field.full{grid-column:1/-1}
+label{display:block;font-size:13px;font-weight:bold;margin:13px 0 7px}
+input,textarea{width:100%;border:1px solid #cbd6cf;border-radius:8px;padding:12px;background:#fff;min-width:0;color:var(--text)}
+input:focus,textarea:focus{outline:2px solid #a8e9ca;border-color:#00a968}
+textarea{min-height:92px;resize:vertical}
+.form-actions{display:flex;gap:10px;margin-top:17px}
+.form-actions button{flex:1}
+.footer-note{color:var(--muted);font-size:12px;line-height:1.6;margin-top:14px}
+@media(max-width:1100px){
+ .topbar{gap:14px;padding:0 16px}.brand{min-width:auto;font-size:17px}.toplinks{gap:12px}
+ .layout{grid-template-columns:205px minmax(0,1fr)}main{padding:16px}
+ .content-grid{grid-template-columns:1fr}.profile-layout{grid-template-columns:190px minmax(0,1fr)}
+}
+@media(max-width:700px){
+ .topbar{height:auto;min-height:68px;flex-wrap:wrap;padding:12px;gap:10px}
+ .brand{flex:1;font-size:16px}.brand-mark{width:36px;height:36px}
+ .search{order:3;flex-basis:100%;max-width:none}.toplinks{gap:12px;font-size:12px}
+ .toplinks .optional{display:none}
+ .layout{display:block}.sidebar{padding:10px;display:block}
+ .identity{display:none}.community{display:none}
+ .nav{display:flex;overflow-x:auto;gap:6px}
+ .nav a{flex:0 0 auto;padding:10px;font-size:12px;gap:6px}
+ .nav .symbol{font-size:15px;width:auto}
+ main{padding:12px}
+ .welcome{padding:20px 17px;display:block}.welcome h1{font-size:21px}.quote{display:none}
+ .card{padding:15px}.card-heading h2,.edit-heading h2{font-size:17px}
+ .profile-layout{grid-template-columns:1fr;gap:10px}
+ .profile-summary{border-right:0;border-bottom:1px solid var(--line);padding:10px 0 18px}
+ .avatar-large{width:105px;height:105px;font-size:37px}
+ .member-code{max-width:260px;margin:15px auto 0}
+ .detail{grid-template-columns: minmax(100px,.8fr) minmax(0,1fr);font-size:13px;gap:8px}
+ .stats{gap:7px}.stat{padding:13px 5px}.stat strong{font-size:21px}.stat span{font-size:11px}
+ .form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}
+ .form-actions{flex-direction:column}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">A</span>
+    <span>AREWA <span style="color:#00d487">LYRICS HUB</span><small>Lyrics · Music · Promotion · Community</small></span>
+  </a>
+  <form class="search" id="searchForm">
+    <input id="searchInput" placeholder="Search lyrics, artists, songs..." aria-label="Search">
+    <span>⌕</span>
+  </form>
+  <nav class="toplinks">
+    <a href="index.html">⌂ Home</a>
+    <a class="optional" href="index.html">♫ Lyrics</a>
+    <a class="optional" href="index.html">♙ Artists</a>
+    <a href="profile.html" title="Account">●</a>
+  </nav>
+  <div class="avatar-small" id="topAvatar">AL</div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="identity">
+      <div class="avatar" id="sideAvatar">AL</div>
+      <strong id="sideName">Member</strong>
+      <span class="pill">● Active</span>
+    </div>
+    <nav class="nav">
+      <a href="index.html"><span class="symbol">⌂</span> Dashboard</a>
+      <a href="profiles.html" class="active"><span class="symbol">♙</span> My Profile</a>
+      <a href="profile.html"><span class="symbol">♛</span> My Membership</a>
+      <a href="login.html"><span class="symbol">▣</span> Account</a>
+      <a href="index.html"><span class="symbol">♧</span> Notifications</a>
+      <a href="index.html"><span class="symbol">☏</span> Support</a>
+      <a href="index.html"><span class="symbol">⚙</span> Settings</a>
+      <a href="#" id="sidebarLogout"><span class="symbol">⇥</span> Logout</a>
+    </nav>
+    <div class="community">
+      <strong>⭐ Join our community!</strong>
+      Arewa Lyrics Hub brings together Hausa lyrics, music promotion and artist collaboration.
+      <a href="index.html">Explore Now →</a>
+    </div>
+  </aside>
+
+  <main>
+    <section id="loading" class="card">
+      <h2>Loading your account…</h2>
+      <p class="muted">Please wait while we check your membership.</p>
+    </section>
+
+    <section id="messagePanel" class="card" hidden>
+      <h2 id="messageTitle">Account information</h2>
+      <div id="message" class="notice" role="status" aria-live="polite"></div>
+      <div class="form-actions">
+        <a class="btn" href="index.html">Back to Home</a>
+        <button id="messageLogout" class="btn secondary" type="button">Sign out</button>
+      </div>
+    </section>
+
+    <section id="profilePanel" hidden>
+      <div class="welcome">
+        <div>
+          <h1>Welcome back, <span id="welcomeName">Member</span>! 👋</h1>
+          <p>Here is your member profile and account information.</p>
+        </div>
+        <div class="quote">“Together we promote Hausa music and talent.”<br>— Arewa Lyrics Hub</div>
+      </div>
+
+      <div class="content-grid">
+        <div>
+          <section class="card">
+            <div class="card-heading">
+              <h2>♙ &nbsp;Profile Information</h2>
+              <button id="editButton" class="btn" type="button">✎ Edit Profile</button>
+            </div>
+            <div class="profile-layout">
+              <div class="profile-summary">
+                <div class="avatar-large" id="largeAvatar">AL</div>
+                <h3 id="summaryName">Member</h3>
+                <span class="pill">● Active Member</span>
+                <div class="member-code">▣ &nbsp;Member ID<strong id="memberId">Loading…</strong></div>
+              </div>
+              <dl class="details">
+                <div class="detail"><dt>♙ Full Name</dt><dd id="memberFullName">—</dd></div>
+                <div class="detail"><dt>☆ Display Name</dt><dd id="memberDisplayName">—</dd></div>
+                <div class="detail"><dt>✉ Email</dt><dd id="memberEmail">—</dd></div>
+                <div class="detail"><dt>☏ Phone</dt><dd id="memberPhone">—</dd></div>
+                <div class="detail"><dt>♛ Membership Type</dt><dd id="membershipType">—</dd></div>
+                <div class="detail"><dt>♧ Status</dt><dd id="memberStatus">—</dd></div>
+                <div class="detail"><dt>⌖ City</dt><dd id="memberCity">—</dd></div>
+                <div class="detail"><dt>▤ State</dt><dd id="memberState">—</dd></div>
+                <div class="detail"><dt>♪ TikTok</dt><dd id="memberTikTok">—</dd></div>
+                <div class="detail"><dt>◎ Instagram</dt><dd id="memberInstagram">—</dd></div>
+                <div class="detail"><dt>▤ Bio</dt><dd id="memberBio">Not provided</dd></div>
+              </dl>
+            </div>
+          </section>
+
+          <div class="stats">
+            <div class="stat"><strong>♫</strong><span>Uploaded Lyrics</span></div>
+            <div class="stat"><strong>♟</strong><span>Collaborations</span></div>
+            <div class="stat"><strong>🏆</strong><span>Competitions</span></div>
+          </div>
+          <div class="quicklinks">
+            <a href="index.html">⬇ Explore Lyrics</a>
+            <a href="index.html">♟ Find Artists</a>
+            <a href="index.html">⚑ Get Promoted</a>
+            <a href="index.html">🏆 Join Competitions</a>
+          </div>
+        </div>
+
+        <section class="card" id="editPanel">
+          <div class="edit-heading"><span style="font-size:23px">✎</span><h2>Edit Profile</h2></div>
+          <p class="muted">Update your information below. Click save when done.</p>
+          <div class="notice success">ℹ️ <strong>Note:</strong> You can update your basic profile details. Your membership status and role cannot be changed here.</div>
+          <form id="editForm">
+            <div class="form-grid">
+              <div class="field">
+                <label for="fullName">Full Name *</label>
+                <input id="fullName" maxlength="120" required>
+              </div>
+              <div class="field">
+                <label for="displayName">Display Name</label>
+                <input id="displayName" maxlength="80">
+              </div>
+              <div class="field">
+                <label for="phone">Phone Number</label>
+                <input id="phone" type="tel" maxlength="30">
+              </div>
+              <div class="field">
+                <label for="city">City</label>
+                <input id="city" maxlength="80">
+              </div>
+              <div class="field">
+                <label for="state">State</label>
+                <input id="state" maxlength="80">
+              </div>
+              <div class="field">
+                <label for="tiktok">TikTok Username</label>
+                <input id="tiktok" maxlength="80" placeholder="@username">
+              </div>
+              <div class="field full">
+                <label for="instagram">Instagram Username</label>
+                <input id="instagram" maxlength="80" placeholder="@username">
+              </div>
+              <div class="field full">
+                <label for="bio">Bio</label>
+                <textarea id="bio" maxlength="500"></textarea>
+              </div>
+            </div>
+            <div id="editMessage" class="notice" hidden role="status" aria-live="polite"></div>
+            <div class="form-actions">
+              <button id="saveButton" class="btn" type="submit">▣ Save Changes</button>
+              <button id="cancelButton" class="btn secondary" type="button">↶ Cancel</button>
+            </div>
+          </form>
+          <p class="footer-note">For account security, role and membership status can only be changed by an authorized administrator.</p>
+        </section>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const SUPABASE_URL = "https://vyydpzgkpbefxdxplqla.supabase.co";
+const SUPABASE_KEY = "sb_publishable_rz2cvizCJOnS-qyBOiISsg_sQJk3wCB";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = id => document.getElementById(id);
+let currentUser = null;
+let currentProfile = null;
+
+function initials(name) {
+  const words = String(name || "Arewa Member").trim().split(/\s+/);
+  return words.slice(0,2).map(word => word[0] || "").join("").toUpperCase();
+}
+function showMessage(title, text, kind = "") {
+  $("loading").hidden = true;
+  $("profilePanel").hidden = true;
+  $("messagePanel").hidden = false;
+  $("messageTitle").textContent = title;
+  $("message").textContent = text;
+  $("message").className = "notice" + (kind ? " " + kind : "");
+}
+function fallback(value) {
+  return value == null || value === "" ? "Not provided" : String(value);
+}
+async function logout() {
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    showMessage("Sign out failed", error.message, "error");
+    return;
+  }
+  window.location.href = "login.html";
+}
+$("messageLogout").addEventListener("click", logout);
+$("sidebarLogout").addEventListener("click", event => {
+  event.preventDefault();
+  logout();
+});
+
+function renderProfile() {
+  const p = currentProfile;
+  const name = p.display_name || p.full_name || "Member";
+  const initialsText = initials(name);
+
+  $("welcomeName").textContent = name;
+  $("sideName").textContent = name;
+  $("summaryName").textContent = name;
+  $("topAvatar").textContent = initialsText;
+  $("sideAvatar").textContent = initialsText;
+  $("largeAvatar").textContent = initialsText;
+
+  $("memberId").textContent = fallback(p.member_id);
+  $("memberFullName").textContent = fallback(p.full_name);
+  $("memberDisplayName").textContent = fallback(p.display_name);
+  $("memberEmail").textContent = fallback(p.email || currentUser.email);
+  $("memberPhone").textContent = fallback(p.phone);
+  $("membershipType").textContent = fallback(p.membership_type);
+  $("memberStatus").textContent = fallback(p.status);
+  $("memberCity").textContent = fallback(p.city);
+  $("memberState").textContent = fallback(p.state);
+  $("memberTikTok").textContent = fallback(p.tiktok_username);
+  $("memberInstagram").textContent = fallback(p.instagram_username);
+  $("memberBio").textContent = fallback(p.bio);
+
+  $("fullName").value = p.full_name || "";
+  $("displayName").value = p.display_name || "";
+  $("phone").value = p.phone || "";
+  $("city").value = p.city || "";
+  $("state").value = p.state || "";
+  $("tiktok").value = p.tiktok_username || "";
+  $("instagram").value = p.instagram_username || "";
+  $("bio").value = p.bio || "";
+}
+
+async function loadProfile() {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    window.location.href = "login.html";
+    return;
+  }
+  currentUser = user;
+
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("id, full_name, display_name, email, phone, bio, city, state, tiktok_username, instagram_username, role, status, member_id, membership_type")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    showMessage("Could not load profile",
+      "Profile access failed. Please check the profiles table and its Row Level Security policies.", "error");
+    return;
+  }
+  if (!profile) {
+    showMessage("Profile not found",
+      "We could not find a member profile for this account. Please contact the administrator.", "error");
+    return;
+  }
+  currentProfile = profile;
+
+  if (profile.status !== "active") {
+    let explanation = "Your account is not active. Please contact the administrator.";
+    if (profile.status === "pending") explanation = "Your membership is awaiting administrator approval.";
+    if (profile.status === "rejected") explanation = "Your membership application was not approved. Please contact the administrator.";
+    if (profile.status === "suspended") explanation = "Your account is suspended. Please contact the administrator.";
+    await supabase.auth.signOut();
+    showMessage("Membership status", explanation, "error");
+    return;
+  }
+
+  $("loading").hidden = true;
+  $("messagePanel").hidden = true;
+  $("profilePanel").hidden = false;
+  renderProfile();
+}
+
+$("editButton").addEventListener("click", () => {
+  $("editPanel").scrollIntoView({behavior:"smooth", block:"start"});
+  $("fullName").focus({preventScroll:true})
