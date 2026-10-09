@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Arewa Lyrics Hub AI</title>
+    <title>Arewa AI</title>
 
     <style>
         * {
@@ -159,7 +159,7 @@
 
             <div class="message ai-message">
                 <strong>Arewa AI</strong><br>
-                Hello 👋 I'm Arewa Lyrics Hub AI.
+                Hello 👋 I'm Arewa AI.
                 How Can I Help You Today?
             </div>
 
@@ -167,7 +167,7 @@
                 <input
                     type="text"
                     id="userInput"
-                    placeholder="Rubuta tambayarka a nan..."
+                    placeholder="Write Title Here..."
                 >
 
                 <button onclick="sendMessage()">
@@ -208,7 +208,7 @@
             aiMessage.className = "message ai-message";
             aiMessage.innerHTML =
                 "<strong>Arewa AI</strong><br>" +
-                "Accepted. AI connection za mu haɗa a mataki na gaba.";
+                "Accepted. Is He Thinking of the Answer?.";
 
             chatBox.insertBefore(
                 aiMessage,
@@ -286,7 +286,7 @@ async function sendMessage() {
 
         aiMessage.innerHTML =
             "<strong>Arewa AI</strong><br>" +
-            escapeHTML(data.reply || "Babu amsa.");
+            escapeHTML(data.reply || "No Answer.");
 
         chatBox.insertBefore(aiMessage, inputArea);
 
