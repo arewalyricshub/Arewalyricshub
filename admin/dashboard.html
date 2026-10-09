@@ -241,9 +241,10 @@
       }
 
       if (
-        !profile ||
-        !["admin", "super_admin"].includes(profile.role)
-      ) {
+  !profile ||
+  !["admin", "super_admin"].includes(profile.role) ||
+  profile.status !== "active"
+) {
         showOnly(accessDenied);
         return;
       }
