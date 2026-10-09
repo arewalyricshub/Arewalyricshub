@@ -10,9 +10,6 @@ const suggestions = document.querySelectorAll(".suggestion");
 // BACKEND URL
 // ======================================
 
-// Za mu saka Render backend URL a nan
-// bayan mun gama backend.
-
 const API_URL = "https://arewalyricshub.onrender.com/api/ai";
 
 // ======================================
@@ -177,7 +174,7 @@ try {
 
 
     addMessage(
-        "Yi haƙuri, Arewa AI bai samu damar amsa yanzu ba. Ka sake gwadawa.",
+        "Sorry😔. Arewa AI Didn't Get an Answer, Try Again.",
         "ai"
     );
 
