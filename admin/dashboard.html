@@ -1,0 +1,378 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#063b2c">
+  <title>Admin Dashboard | Arewa Lyrics Hub</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f6f4;
+      color: #193329;
+    }
+
+    header {
+      background: #063b2c;
+      color: white;
+      padding: 22px 18px;
+    }
+
+    header h1 { margin: 0 0 7px; font-size: 22px; }
+    header p { margin: 0; color: #d0e7da; }
+
+    main {
+      max-width: 1000px;
+      margin: auto;
+      padding: 22px 16px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid #dce6df;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+    }
+
+    .number { font-size: 28px; font-weight: 800; color: #087348; }
+
+    .muted { color: #687970; line-height: 1.5; }
+
+    .notice {
+      padding: 12px;
+      border-radius: 8px;
+      background: #fff5dc;
+      color: #704e00;
+      overflow-wrap: anywhere;
+      line-height: 1.5;
+    }
+
+    .error { background: #fff0ed; color: #a12c20; }
+    .success { background: #e5f7ec; color: #17633a; }
+
+    button, .link {
+      display: inline-block;
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 8px;
+      background: #07583c;
+      color: white;
+      font-size: 14px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    button:disabled { opacity: .55; cursor: wait; }
+
+    .secondary { background: #e7eee9; color: #193329; }
+
+    .member {
+      border: 1px solid #e0e8e2;
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .member h3 { margin: 0 0 8px; }
+    .member p { margin: 6px 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .reject { background: #a12c20; }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd8cf;
+      border-radius: 8px;
+      margin: 8px 0 12px;
+      font-size: 16px;
+    }
+
+    [hidden] { display: none !important; }
+
+    @media (max-width: 480px) {
+      .panel { padding: 15px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>AREWA LYRICS HUB</h1>
+    <p>Administration dashboard</p>
+  </header>
+
+  <main>
+    <section id="setup" class="panel">
+      <h2>Admin setup required</h2>
+      <p class="muted">
+        Enter the existing Supabase project URL and publishable key
+        in this file's configuration before using the dashboard.
+      </p>
+    </section>
+
+    <section id="loginPanel" class="panel" hidden>
+      <h2>Admin sign in</h2>
+      <p class="muted">Sign in with your existing authorized admin account.</p>
+      <form id="adminLogin">
+        <label for="email">Email address</label>
+        <input id="email" type="email" autocomplete="username" required>
+        <label for="password">Password</label>
+        <input id="password" type="password"
+               autocomplete="current-password" required>
+        <button id="loginButton" type="submit">Sign in</button>
+      </form>
+    </section>
+
+    <section id="dashboard" hidden>
+      <div class="panel">
+        <h2>Admin overview</h2>
+        <p id="adminIdentity" class="muted"></p>
+        <div class="summary">
+          <div>
+            <div class="number" id="pendingCount">—</div>
+            <div>Pending members</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="refreshButton" type="button">Refresh list</button>
+          <button id="logoutButton" class="secondary" type="button">
+            Sign out
+          </button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Membership applications</h2>
+        <p class="muted">
+          Review applications before making a decision. Approval controls
+          must only be enabled after secure server-side authorization is set up.
+        </p>
+        <div id="statusMessage" class="notice" role="status">
+          Loading applications…
+        </div>
+        <div id="memberList"></div>
+      </div>
+    </section>
+
+    <section id="accessDenied" class="panel" hidden>
+      <h2>Admin access not authorized</h2>
+      <p>
+        This account does not have an authorized administrator role.
+        No membership changes have been made.
+      </p>
+      <button id="deniedLogout" type="button">Sign out</button>
+    </section>
+  </main>
+
+  <script type="module">
+    import { createClient } from
+      "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    // Use the same existing project credentials as register.html.
+    const SUPABASE_URL = "https://vyydpzgkpbefxdxplqla.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_rz2cvizCJOnS-qyBOiISsg_sQJk3wCB";
+
+    const $ = (id) => document.getElementById(id);
+
+    const setup = $("setup");
+    const loginPanel = $("loginPanel");
+    const dashboard = $("dashboard");
+    const accessDenied = $("accessDenied");
+    const statusMessage = $("statusMessage");
+
+    let supabase = null;
+    let busy = false;
+
+    function showMessage(text, kind = "") {
+      statusMessage.textContent = text;
+      statusMessage.className = "notice" +
+        (kind ? " " + kind : "");
+    }
+
+    function showOnly(section) {
+      [setup, loginPanel, dashboard, accessDenied].forEach((element) => {
+        element.hidden = element !== section;
+      });
+    }
+
+    function safeText(value) {
+      return value == null || value === "" ? "Not provided" : String(value);
+    }
+
+    async function checkAdmin() {
+      const { data: { user }, error: authError } =
+        await supabase.auth.getUser();
+
+      if (authError || !user) {
+        showOnly(loginPanel);
+        return;
+      }
+
+      // This read is NOT a substitute for server-side RLS authorization.
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("role, status, full_name, email")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (error) {
+        showOnly(dashboard);
+        $("adminIdentity").textContent = "";
+        $("pendingCount").textContent = "—";
+        showMessage(
+          "Could not verify your role. Check the profiles table and RLS policies.",
+          "error"
+        );
+        $("memberList").replaceChildren();
+        return;
+      }
+
+      if (
+        !profile ||
+        !["admin", "super_admin"].includes(profile.role)
+      ) {
+        showOnly(accessDenied);
+        return;
+      }
+
+      showOnly(dashboard);
+      $("adminIdentity").textContent =
+        `Signed in: ${safeText(profile.full_name || user.email)} — ${profile.role}`;
+
+      await loadPendingMembers();
+    }
+
+    async function loadPendingMembers() {
+      if (busy) return;
+      busy = true;
+      $("refreshButton").disabled = true;
+      $("pendingCount").textContent = "…";
+      $("memberList").replaceChildren();
+      showMessage("Loading pending applications…");
+
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("member_id, full_name, email, status, role, created_at, joined_at")
+          .eq("status", "pending")
+          .order("created_at", { ascending: true })
+          .limit(100);
+
+        if (error) throw error;
+
+        $("pendingCount").textContent = String(data.length);
+
+        if (!data.length) {
+          showMessage("No pending membership applications were returned.", "success");
+          return;
+        }
+
+        showMessage(
+          "Applications are visible only if your current Supabase permissions allow this query."
+        );
+
+        for (const member of data) {
+          const card = document.createElement("article");
+          card.className = "member";
+
+          const title = document.createElement("h3");
+          title.textContent = safeText(member.full_name);
+          card.appendChild(title);
+
+          for (const [label, value] of [
+            ["Member ID", member.member_id],
+            ["Email", member.email],
+            ["Status", member.status],
+            ["Role", member.role],
+            ["Registered", member.created_at || member.joined_at]
+          ]) {
+            const p = document.createElement("p");
+            p.textContent = `${label}: ${safeText(value)}`;
+            card.appendChild(p);
+          }
+
+          const note = document.createElement("p");
+          note.className = "muted";
+          note.textContent =
+            "Approval and rejection are not enabled in this first step.";
+          card.appendChild(note);
+
+          $("memberList").appendChild(card);
+        }
+      } catch (error) {
+        $("pendingCount").textContent = "—";
+        showMessage(
+          error.message || "Could not load applications.",
+          "error"
+        );
+      } finally {
+        busy = false;
+        $("refreshButton").disabled = false;
+      }
+    }
+
+    if (
+      SUPABASE_URL.includes("YOUR_SUPABASE") ||
+      SUPABASE_KEY.includes("YOUR_SUPABASE")
+    ) {
+      showOnly(setup);
+    } else {
+      supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+      showOnly(loginPanel);
+
+      $("adminLogin").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const button = $("loginButton");
+        button.disabled = true;
+
+        try {
+          const { error } = await supabase.auth.signInWithPassword({
+            email: $("email").value.trim(),
+            password: $("password").value
+          });
+          if (error) throw error;
+          await checkAdmin();
+        } catch (error) {
+          showOnly(loginPanel);
+          const old = $("loginError");
+          if (old) old.remove();
+          const p = document.createElement("p");
+          p.id = "loginError";
+          p.className = "notice error";
+          p.textContent = error.message || "Sign-in failed.";
+          $("adminLogin").appendChild(p);
+        } finally {
+          button.disabled = false;
+        }
+      });
+
+      $("refreshButton").addEventListener("click", loadPendingMembers);
+
+      async function logout() {
+        await supabase.auth.signOut();
+        $("memberList").replaceChildren();
+        showOnly(loginPanel);
+      }
+
+      $("logoutButton").addEventListener("click", logout);
+      $("deniedLogout").addEventListener("click", logout);
+
+      checkAdmin().catch(() => showOnly(loginPanel));
+    }
+  </script>
+</body>
+                               </html>
+                               
