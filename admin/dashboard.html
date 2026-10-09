@@ -305,11 +305,34 @@
             card.appendChild(p);
           }
 
-          const note = document.createElement("p");
-          note.className = "muted";
-          note.textContent =
-            "Approval and rejection are not enabled in this first step.";
-          card.appendChild(note);
+          
+const actions = document.createElement("div");
+actions.className = "actions";
+
+const approveButton = document.createElement("button");
+approveButton.type = "button";
+approveButton.textContent = "Approve";
+approveButton.addEventListener("click", () => {
+  reviewMember(member.member_id, "active", [
+    approveButton,
+    rejectButton
+  ]);
+});
+
+const rejectButton = document.createElement("button");
+rejectButton.type = "button";
+rejectButton.className = "reject";
+rejectButton.textContent = "Reject";
+rejectButton.addEventListener("click", () => {
+  reviewMember(member.member_id, "rejected", [
+    approveButton,
+    rejectButton
+  ]);
+});
+
+actions.append(approveButton, rejectButton);
+card.appendChild(actions);
+          
 
           $("memberList").appendChild(card);
         }
