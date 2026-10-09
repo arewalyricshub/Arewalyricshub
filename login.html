@@ -191,8 +191,13 @@
 
           showMessage("Login successful. Opening your account...", true);
 
-          // Change this only after confirming the real dashboard file path.
-          window.location.href = "dashboard.html";
+          
+if (profile.role === "super_admin" || profile.role === "admin") {
+  window.location.href = "admin/dashboard.html";
+} else {
+  window.location.href = "profile.html";
+}
+          
 
         } catch (error) {
           showMessage(error.message || "Login failed. Please try again.");
