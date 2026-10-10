@@ -72,8 +72,8 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:25px}
   </div>
   <nav>
     <a href="dashboard.html" class="active">⌂ &nbsp; Member Dashboard</a>
-    <a href="profiles.html">♙ &nbsp; My Profile</a>
-    <a href="profiles.html">▣ &nbsp; Membership Details</a>
+    <a href="profile.html">♙ &nbsp; My Profile</a>
+    <a href="profile.html">▣ &nbsp; Membership Details</a>
     <a href="index.html">♫ &nbsp; Lyrics & Music</a>
     <a href="index.html">♟ &nbsp; Artist Promotion</a>
     <a href="index.html">✦ &nbsp; Collaboration</a>
@@ -130,7 +130,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:25px}
         <div class="info"><span>State</span><span id="state">—</span></div>
         <div class="info"><span>TikTok</span><span id="tiktok">—</span></div>
         <div class="actions">
-          <a class="btn" href="profiles.html">Edit My Profile →</a>
+          <a class="btn" href="profile.html">Edit My Profile →</a>
         </div>
       </section>
 
@@ -142,7 +142,7 @@ footer{color:var(--muted);font-size:12px;text-align:center;padding:25px}
         <div class="notice">Your member dashboard is connected to your account. Some community services may not be available until their dedicated pages are built and connected.</div>
         <div class="actions">
           <a class="btn" href="index.html">Explore Official Website</a>
-          <a class="btn secondary" href="profiles.html">View Profile</a>
+          <a class="btn secondary" href="profile.html">View Profile</a>
         </div>
       </section>
     </div>
@@ -180,7 +180,7 @@ async function loadDashboard(){
     return;
   }
 
-  const {data:p,error}=await supabase.from("profiles")
+  const {data:p,error}=await supabase.from("profile")
     .select("id,full_name,display_name,email,phone,city,state,tiktok_username,role,status,member_id,membership_type")
     .eq("id",user.id).maybeSingle();
 
