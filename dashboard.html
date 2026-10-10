@@ -185,8 +185,13 @@ async function loadDashboard(){
     .eq("id",user.id).maybeSingle();
 
   if(error){
-    showMessage("Could not load dashboard","Supabase could not read your profile. Please check the profiles table and its SELECT policies.",true);
-    return;
+  console.error("Supabase profile read error:", error);
+  showMessage(
+    "Could not load dashboard",
+    "Supabase error: " + error.message,
+    true
+  );
+  return;
   }
   if(!p){
     showMessage("Profile not found","No member profile is associated with this account. Please contact the administrator.",true);
