@@ -1,0 +1,575 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#063b2c">
+  <title>Super Admin Dashboard | Arewa Lyrics Hub</title>
+  <style>
+    :root {
+      --green: #063b2c;
+      --green2: #087348;
+      --yellow: #f1c84b;
+      --bg: #f3f6f4;
+      --border: #dce6df;
+      --text: #193329;
+      --muted: #687970;
+      --red: #a12c20;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      background: var(--green);
+      color: white;
+      padding: 20px;
+    }
+    header h1 { margin: 0 0 6px; font-size: 22px; }
+    header p { margin: 0; color: #d0e7da; }
+    main { max-width: 1150px; margin: auto; padding: 20px 14px 40px; }
+    .panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+      min-width: 0;
+    }
+    h2 { font-size: 19px; margin: 0 0 12px; }
+    h3 { font-size: 16px; }
+    .muted { color: var(--muted); line-height: 1.55; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 12px;
+    }
+    .stat {
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 14px;
+    }
+    .number { font-size: 27px; font-weight: 800; color: var(--green2); }
+    .actions, nav { display: flex; flex-wrap: wrap; gap: 8px; }
+    nav { margin-bottom: 16px; }
+    button, .nav-item {
+      border: 0;
+      border-radius: 8px;
+      padding: 11px 14px;
+      background: var(--green2);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+    .secondary { background: #e7eee9; color: var(--text); }
+    .danger { background: var(--red); }
+    button:disabled { opacity: .55; cursor: wait; }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0 12px;
+      border: 1px solid #cbd8cf;
+      border-radius: 8px;
+      font-size: 16px;
+      background: white;
+      color: var(--text);
+    }
+    label { font-size: 14px; font-weight: 600; }
+    .notice {
+      padding: 12px;
+      border-radius: 8px;
+      background: #fff5dc;
+      color: #704e00;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+    .error { background: #fff0ed; color: #a12c20; }
+    .success { background: #e5f7ec; color: #17633a; }
+    .member {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 12px;
+      overflow-wrap: anywhere;
+    }
+    .member h3 { margin: 0 0 10px; }
+    .member p { margin: 7px 0; line-height: 1.4; }
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 20px;
+      background: #e7eee9;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    [hidden] { display: none !important; }
+    @media (max-width: 480px) {
+      main { padding: 12px 10px 28px; }
+      .panel { padding: 14px; }
+      header { padding: 18px 14px; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>AREWA LYRICS HUB</h1>
+  <p>Super Admin & Administration Dashboard</p>
+</header>
+
+<main>
+  <section id="setup" class="panel" hidden>
+    <h2>Configuration Required</h2>
+    <p class="muted">
+      Add your existing Supabase project URL and publishable key
+      to the configuration section in this file.
+    </p>
+  </section>
+
+  <section id="loginPanel" class="panel" hidden>
+    <h2>Administrator Sign In</h2>
+    <p class="muted">Sign in with an authorized active administrator account.</p>
+    <form id="loginForm">
+      <label for="email">Email Address</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" type="password"
+        autocomplete="current-password" required>
+      <button id="loginButton" type="submit">Sign In</button>
+    </form>
+    <div id="loginMessage" class="notice" role="status" hidden></div>
+  </section>
+
+  <section id="denied" class="panel" hidden>
+    <h2>Access Denied</h2>
+    <p class="muted">
+      This account does not have an active authorized administrator role.
+      No administrative changes have been made.
+    </p>
+    <button id="deniedLogout" type="button">Sign Out</button>
+  </section>
+
+  <section id="app" hidden>
+    <div class="panel">
+      <div class="section-title">
+        <div>
+          <h2>Administration Overview</h2>
+          <p id="identity" class="muted"></p>
+        </div>
+        <span class="tag" id="roleTag">Administrator</span>
+      </div>
+      <div class="grid">
+        <div class="stat">
+          <div class="number" id="totalCount">—</div>
+          <div>Total Profiles</div>
+        </div>
+        <div class="stat">
+          <div class="number" id="pendingCount">—</div>
+          <div>Pending Applications</div>
+        </div>
+        <div class="stat">
+          <div class="number" id="activeCount">—</div>
+          <div>Active Profiles</div>
+        </div>
+        <div class="stat">
+          <div class="number" id="rejectedCount">—</div>
+          <div>Rejected Applications</div>
+        </div>
+      </div>
+      <div class="actions" style="margin-top:16px">
+        <button id="refreshButton" type="button">Refresh Data</button>
+        <button id="logoutButton" type="button" class="secondary">Sign Out</button>
+      </div>
+    </div>
+
+    <nav aria-label="Administration sections">
+      <a class="nav-item" href="#members">Members</a>
+      <a class="nav-item" href="#modules">Other Modules</a>
+    </nav>
+
+    <section class="panel" id="members">
+      <div class="section-title">
+        <h2>Member Management</h2>
+      </div>
+      <p class="muted">
+        Search profiles and review pending membership applications.
+        Membership decisions are submitted through the secured database function.
+      </p>
+
+      <label for="search">Search by name, email, or Member ID</label>
+      <input id="search" type="search" placeholder="Enter a name, email, or ID">
+
+      <label for="statusFilter">Filter by Status</label>
+      <select id="statusFilter">
+        <option value="all">All statuses</option>
+        <option value="pending">Pending</option>
+        <option value="active">Active</option>
+        <option value="rejected">Rejected</option>
+      </select>
+
+      <div id="message" class="notice" role="status">Loading profiles...</div>
+      <div id="memberList"></div>
+    </section>
+
+    <section class="panel" id="modules">
+      <h2>Additional Administration Modules</h2>
+      <p class="muted">
+        These modules require their own database tables, access policies,
+        and tested workflows before they can be enabled.
+      </p>
+      <div class="grid">
+        <div class="stat">
+          <h3>Artists & Agreements</h3>
+          <p class="muted">Artist applications, verification, agreements and releases.</p>
+          <span class="tag">Not connected yet</span>
+        </div>
+        <div class="stat">
+          <h3>Posts & Announcements</h3>
+          <p class="muted">Create, edit and publish platform announcements.</p>
+          <span class="tag">Not connected yet</span>
+        </div>
+        <div class="stat">
+          <h3>Notifications</h3>
+          <p class="muted">Send notifications to the correct user groups.</p>
+          <span class="tag">Not connected yet</span>
+        </div>
+        <div class="stat">
+          <h3>Competitions</h3>
+          <p class="muted">Contestants, voting, scoring and verified results.</p>
+          <span class="tag">Not connected yet</span>
+        </div>
+        <div class="stat">
+          <h3>Admin Permissions</h3>
+          <p class="muted">Manage administrator and moderator permissions securely.</p>
+          <span class="tag">Not connected yet</span>
+        </div>
+        <div class="stat">
+          <h3>Settings & Activity Logs</h3>
+          <p class="muted">Platform settings and records of administrative actions.</p>
+          <span class="tag">Not connected yet</span>
+        </div>
+      </div>
+    </section>
+  </section>
+</main>
+
+<script type="module">
+  import { createClient } from
+    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+  // CONFIGURATION: Replace these two values with your existing project values.
+  const SUPABASE_URL = "https://vyydpzgkpbefxdxplqla.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_rz2cvizCJOnS-qyBOiISsg_sQJk3wCB";
+
+  const $ = (id) => document.getElementById(id);
+  const setup = $("setup");
+  const loginPanel = $("loginPanel");
+  const denied = $("denied");
+  const app = $("app");
+
+  let supabase;
+  let currentProfile;
+  let profiles = [];
+  let busy = false;
+
+  function showOnly(section) {
+    [setup, loginPanel, denied, app].forEach((el) => {
+      el.hidden = el !== section;
+    });
+  }
+
+  function message(text, kind = "") {
+    const el = $("message");
+    el.textContent = text;
+    el.className = "notice" + (kind ? " " + kind : "");
+  }
+
+  function loginMessage(text, kind = "error") {
+    const el = $("loginMessage");
+    el.textContent = text;
+    el.className = "notice " + kind;
+    el.hidden = false;
+  }
+
+  function safe(value) {
+    return value == null || value === "" ? "Not provided" : String(value);
+  }
+
+  function dateText(value) {
+    if (!value) return "Not provided";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
+  }
+
+  async function verifyAdmin() {
+    const { data, error } = await supabase.auth.getUser();
+    if (error || !data.user) {
+      showOnly(loginPanel);
+      return;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("id, full_name, email, role, status")
+      .eq("id", data.user.id)
+      .maybeSingle();
+
+    if (profileError) {
+      showOnly(loginPanel);
+      loginMessage(
+        "Unable to verify your administrator profile. Check your database access policies."
+      );
+      return;
+    }
+
+    if (
+      !profile ||
+      !["admin", "super_admin"].includes(profile.role) ||
+      profile.status !== "active"
+    ) {
+      showOnly(denied);
+      return;
+    }
+
+    currentProfile = profile;
+    $("identity").textContent =
+      "Signed in as " + safe(profile.full_name || data.user.email);
+    $("roleTag").textContent = profile.role.replaceAll("_", " ").toUpperCase();
+
+    showOnly(app);
+    await loadProfiles();
+  }
+
+  async function loadProfiles() {
+    if (busy) return;
+    busy = true;
+    $("refreshButton").disabled = true;
+    $("memberList").replaceChildren();
+    message("Loading profiles...");
+
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, member_id, full_name, email, role, status, created_at, joined_at")
+        .order("created_at", { ascending: false })
+        .limit(500);
+
+      if (error) throw error;
+
+      profiles = data || [];
+      $("totalCount").textContent = String(profiles.length);
+      $("pendingCount").textContent =
+        String(profiles.filter(p => p.status === "pending").length);
+      $("activeCount").textContent =
+        String(profiles.filter(p => p.status === "active").length);
+      $("rejectedCount").textContent =
+        String(profiles.filter(p => p.status === "rejected").length);
+
+      renderProfiles();
+    } catch (error) {
+      profiles = [];
+      ["totalCount", "pendingCount", "activeCount", "rejectedCount"]
+        .forEach(id => $(id).textContent = "—");
+      $("memberList").replaceChildren();
+      message(
+        "Could not load profiles. Check the administrator SELECT policy. " +
+        (error.message || ""),
+        "error"
+      );
+    } finally {
+      busy = false;
+      $("refreshButton").disabled = false;
+    }
+  }
+
+  function renderProfiles() {
+    const query = $("search").value.trim().toLowerCase();
+    const status = $("statusFilter").value;
+    const list = $("memberList");
+    list.replaceChildren();
+
+    const filtered = profiles.filter(p => {
+      const matchesStatus = status === "all" || p.status === status;
+      const text = [
+        p.full_name, p.email, p.member_id, p.role, p.status
+      ].join(" ").toLowerCase();
+      return matchesStatus && text.includes(query);
+    });
+
+    if (!filtered.length) {
+      message("No profiles match the selected search and filter.", "success");
+      return;
+    }
+
+    message("Showing " + filtered.length + " profile(s).", "success");
+
+    for (const profile of filtered) {
+      const card = document.createElement("article");
+      card.className = "member";
+
+      const title = document.createElement("h3");
+      title.textContent = safe(profile.full_name);
+      card.appendChild(title);
+
+      for (const [label, value] of [
+        ["Member ID", profile.member_id],
+        ["Email", profile.email],
+        ["Role", profile.role],
+        ["Status", profile.status],
+        ["Registered", dateText(profile.created_at || profile.joined_at)]
+      ]) {
+        const p = document.createElement("p");
+        p.textContent = label + ": " + safe(value);
+        card.appendChild(p);
+      }
+
+      if (
+        profile.status === "pending" &&
+        profile.role === "member" &&
+        currentProfile &&
+        ["admin", "super_admin"].includes(currentProfile.role)
+      ) {
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const approve = document.createElement("button");
+        approve.type = "button";
+        approve.textContent = "Approve";
+        approve.addEventListener("click", () =>
+          reviewMember(profile.member_id, "active", actions)
+        );
+
+        const reject = document.createElement("button");
+        reject.type = "button";
+        reject.className = "danger";
+        reject.textContent = "Reject";
+        reject.addEventListener("click", () =>
+          reviewMember(profile.member_id, "rejected", actions)
+        );
+
+        actions.append(approve, reject);
+        card.appendChild(actions);
+      }
+
+      list.appendChild(card);
+    }
+  }
+
+  async function reviewMember(memberId, decision, actions) {
+    if (!memberId) {
+      message("This profile has no Member ID and cannot be reviewed here.", "error");
+      return;
+    }
+
+    if (!["active", "rejected"].includes(decision)) return;
+
+    const confirmed = window.confirm(
+      decision === "active"
+        ? "Approve this membership application?"
+        : "Reject this membership application?"
+    );
+    if (!confirmed) return;
+
+    const buttons = [...actions.querySelectorAll("button")];
+    buttons.forEach(button => button.disabled = true);
+    message("Submitting membership decision...");
+
+    try {
+      const { data, error } = await supabase.rpc("review_membership", {
+        p_member_id: memberId,
+        p_decision: decision
+      });
+
+      if (error) throw error;
+      if (data !== true) {
+        throw new Error(
+          "The database did not confirm the change. Refresh and verify the application."
+        );
+      }
+
+      message(
+        decision === "active"
+          ? "Membership approved successfully."
+          : "Membership application rejected successfully.",
+        "success"
+      );
+      await loadProfiles();
+    } catch (error) {
+      message(
+        "Membership review failed. " + (error.message || "Please try again."),
+        "error"
+      );
+      buttons.forEach(button => button.disabled = false);
+    }
+  }
+
+  $("loginForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    $("loginButton").disabled = true;
+    $("loginMessage").hidden = true;
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: $("email").value.trim(),
+        password: $("password").value
+      });
+      if (error) throw error;
+      await verifyAdmin();
+    } catch (error) {
+      loginMessage(error.message || "Sign-in failed.");
+    } finally {
+      $("loginButton").disabled = false;
+    }
+  });
+
+  async function logout() {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      loginMessage("Sign-out failed. Please try again.");
+      return;
+    }
+    currentProfile = null;
+    profiles = [];
+    $("memberList").replaceChildren();
+    showOnly(loginPanel);
+  }
+
+  $("logoutButton").addEventListener("click", logout);
+  $("deniedLogout").addEventListener("click", logout);
+  $("refreshButton").addEventListener("click", loadProfiles);
+  $("search").addEventListener("input", renderProfiles);
+  $("statusFilter").addEventListener("change", renderProfiles);
+
+  if (
+    SUPABASE_URL === "PASTE_YOUR_SUPABASE_PROJECT_URL_HERE" ||
+    SUPABASE_PUBLISHABLE_KEY === "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE"
+  ) {
+    showOnly(setup);
+  } else {
+    try {
+      supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+      showOnly(loginPanel);
+      verifyAdmin().catch(() => {
+        showOnly(loginPanel);
+        loginMessage("Unable to verify the current session. Please sign in again.");
+      });
+    } catch {
+      showOnly(setup);
+    }
+  }
+</script>
+</body>
+  </html>
+  
