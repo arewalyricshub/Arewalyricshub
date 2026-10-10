@@ -180,7 +180,7 @@ async function loadDashboard(){
     return;
   }
 
-  const {data:p,error}=await supabase.from("profile")
+  const {data:p,error}=await supabase.from("profiles")
     .select("id,full_name,display_name,email,phone,city,state,tiktok_username,role,status,member_id,membership_type")
     .eq("id",user.id).maybeSingle();
 
