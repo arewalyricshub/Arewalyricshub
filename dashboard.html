@@ -1,0 +1,767 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#073b2a">
+  <title>Member Dashboard | Arewa Lyrics Hub</title>
+
+  <style>
+    :root {
+      --green: #073b2a;
+      --green2: #0b5039;
+      --yellow: #f3c94f;
+      --bg: #f4f7f5;
+      --white: #fff;
+      --text: #17251e;
+      --muted: #748078;
+      --border: #e3eae5;
+      --shadow: 0 8px 28px rgba(7,59,42,.07);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+
+    .layout { min-height: 100vh; }
+
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: 248px;
+      background: var(--green);
+      color: white;
+      padding: 25px 16px;
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+      overflow-y: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 0 8px 25px;
+      border-bottom: 1px solid #ffffff20;
+    }
+
+    .brand-logo {
+      display: grid;
+      place-items: center;
+      width: 43px;
+      height: 43px;
+      flex-shrink: 0;
+      border-radius: 13px;
+      background: var(--yellow);
+      color: var(--green);
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .brand strong { display: block; font-size: 14px; }
+    .brand small { display: block; color: #c6d8ce; margin-top: 5px; }
+
+    .nav-label {
+      color: #a9c4b6;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      margin: 25px 10px 10px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      margin: 3px 0;
+      font-size: 13px;
+      color: #e0ebe4;
+      transition: .2s;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      background: #ffffff16;
+      color: white;
+    }
+
+    .nav-link.active {
+      border-left: 3px solid var(--yellow);
+      font-weight: 700;
+    }
+
+    .nav-icon { width: 20px; text-align: center; }
+
+    .sidebar-bottom { margin-top: auto; padding-top: 25px; }
+
+    .help-card {
+      border: 1px solid #ffffff25;
+      border-radius: 13px;
+      padding: 14px;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #d6e5dc;
+    }
+
+    .help-card strong { color: white; }
+
+    .logout {
+      width: 100%;
+      margin-top: 13px;
+      border: 1px solid #ffffff30;
+      background: transparent;
+      color: white;
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .main {
+      margin-left: 248px;
+      padding: 27px 32px 45px;
+      max-width: 1600px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      color: var(--green2);
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      font-size: 10px;
+    }
+
+    h1 { font-size: 27px; margin: 7px 0; }
+    .subtitle { color: var(--muted); font-size: 13px; line-height: 1.6; }
+
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px 14px;
+      min-width: 170px;
+    }
+
+    .avatar {
+      width: 39px;
+      height: 39px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #e5f0e9;
+      color: var(--green);
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .user-pill strong { display: block; font-size: 12px; }
+    .user-pill small { color: var(--muted); font-size: 11px; }
+
+    .welcome {
+      padding: 27px;
+      border-radius: 19px;
+      background: linear-gradient(115deg, #073b2a, #126044);
+      color: white;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .welcome:after {
+      content: "ALH";
+      position: absolute;
+      right: 20px;
+      bottom: -33px;
+      color: #ffffff0c;
+      font-size: 105px;
+      font-weight: 900;
+      pointer-events: none;
+    }
+
+    .welcome h2 { margin: 10px 0; font-size: 25px; }
+    .welcome p { max-width: 540px; color: #d7e7dd; line-height: 1.7; font-size: 13px; }
+    .welcome .eyebrow { color: var(--yellow); }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 9px;
+      padding: 12px 16px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .button-yellow { background: var(--yellow); color: var(--green); }
+    .button-green { background: var(--green); color: white; }
+    .button-light { background: #eaf2ed; color: var(--green); }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 29px 0 15px;
+    }
+
+    .section-head h2 { margin: 0; font-size: 17px; }
+    .section-head p { margin: 5px 0 0; font-size: 12px; color: var(--muted); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 15px;
+    }
+
+    .stat-card, .panel, .feature-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-card { padding: 18px; min-width: 0; }
+    .stat-top { display: flex; align-items: center; justify-content: space-between; }
+    .stat-icon {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      background: #eaf3ed;
+      font-size: 18px;
+    }
+
+    .stat-card small { color: var(--muted); font-size: 11px; }
+    .stat-card h3 { font-size: 18px; margin: 14px 0 5px; overflow-wrap: anywhere; }
+    .stat-card p { margin: 0; color: var(--muted); font-size: 11px; }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(240px, 1fr);
+      gap: 17px;
+      margin-top: 19px;
+    }
+
+    .panel { padding: 20px; min-width: 0; }
+    .panel h3 { margin: 0 0 5px; font-size: 15px; }
+    .panel .subtitle { margin-bottom: 17px; }
+
+    .profile-row {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 15px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .profile-row:last-child { border-bottom: 0; }
+    .profile-row .stat-icon { flex-shrink: 0; }
+    .profile-row strong { display: block; font-size: 12px; }
+    .profile-row small { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+
+    .badge {
+      display: inline-block;
+      background: #fff4d4;
+      color: #805c00;
+      padding: 5px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: capitalize;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 15px;
+    }
+
+    .feature-card {
+      padding: 19px;
+      transition: transform .2s, border-color .2s;
+    }
+
+    .feature-card:hover { transform: translateY(-3px); border-color: #b4d1bf; }
+    .feature-card .stat-icon { margin-bottom: 13px; }
+    .feature-card h3 { font-size: 14px; margin: 0 0 8px; }
+    .feature-card p { color: var(--muted); font-size: 12px; line-height: 1.6; min-height: 39px; }
+    .feature-card span { color: var(--green2); font-size: 12px; font-weight: 800; }
+
+    .search-wrap { position: relative; width: min(100%, 320px); }
+    .search-wrap input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: white;
+      padding: 12px 13px;
+      outline: none;
+    }
+
+    .search-wrap input:focus { border-color: var(--green2); }
+
+    .footer {
+      padding: 28px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .notice {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 25px;
+      margin: 30px auto;
+      max-width: 600px;
+      text-align: center;
+    }
+
+    .notice h2 { margin-top: 0; }
+    .notice p { color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .notice .button { margin: 5px; }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 1050px) {
+      .sidebar { width: 215px; }
+      .main { margin-left: 215px; padding: 23px; }
+      .features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .content-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 680px) {
+      .sidebar {
+        position: static;
+        width: 100%;
+        padding: 14px;
+        overflow: visible;
+      }
+
+      .brand { padding-bottom: 13px; }
+      .nav-label { margin-top: 16px; }
+      .nav-list {
+        display: flex;
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+      }
+
+      .nav-link {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        padding: 10px;
+        font-size: 11px;
+      }
+
+      .nav-link.active { border-left: 0; border-bottom: 2px solid var(--yellow); }
+      .sidebar-bottom { display: flex; gap: 8px; align-items: center; padding-top: 12px; }
+      .help-card { flex: 1; padding: 10px; }
+      .logout { width: auto; margin-top: 0; padding: 11px; }
+      .main { margin-left: 0; padding: 19px 14px 30px; }
+      .topbar { align-items: flex-start; flex-direction: column; margin-bottom: 20px; }
+      h1 { font-size: 23px; }
+      .user-pill { width: 100%; }
+      .welcome { padding: 22px 18px; }
+      .welcome h2 { font-size: 22px; }
+      .welcome:after { font-size: 75px; }
+      .stats { grid-template-columns: 1fr; gap: 10px; }
+      .stat-card { padding: 15px; }
+      .stat-card h3 { margin-top: 8px; }
+      .features { grid-template-columns: 1fr; }
+      .feature-card p { min-height: 0; }
+      .section-head { align-items: flex-start; flex-direction: column; }
+      .search-wrap { width: 100%; }
+      .panel { padding: 16px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loading" class="notice">
+    <h2>AREWA LYRICS HUB</h2>
+    <p>Loading your dashboard securely...</p>
+  </div>
+
+  <div id="app" class="layout hidden">
+    <aside class="sidebar">
+      <a class="brand" href="index.html">
+        <div class="brand-logo">A</div>
+        <div>
+          <strong>AREWA LYRICS HUB</strong>
+          <small>Creator Community</small>
+        </div>
+      </a>
+
+      <div class="nav-label">MEMBER MENU</div>
+      <nav class="nav-list">
+        <a class="nav-link active" href="dashboard.html"><span class="nav-icon">⌂</span>Dashboard</a>
+        <a class="nav-link" href="profile.html"><span class="nav-icon">♙</span>My Profile</a>
+        <a class="nav-link" href="competitions.html"><span class="nav-icon">🏆</span>Competitions</a>
+        <a class="nav-link" href="members.html"><span class="nav-icon">♧</span>Members</a>
+        <a class="nav-link" href="artists.html"><span class="nav-icon">♫</span>Artists</a>
+      </nav>
+
+      <div class="nav-label">EXPLORE</div>
+      <nav class="nav-list">
+        <a class="nav-link" href="index.html"><span class="nav-icon">♪</span>Lyrics & Music</a>
+        <a class="nav-link" href="artist-dashboard.html"><span class="nav-icon">★</span>Artist Area</a>
+        <a class="nav-link" href="promotion.html"><span class="nav-icon">↗</span>Promotion</a>
+        <a class="nav-link" href="collaboration.html"><span class="nav-icon">♬</span>Collaboration</a>
+        <a class="nav-link" href="support.html"><span class="nav-icon">?</span>Help & Support</a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="help-card">
+          <strong>Need assistance?</strong><br>
+          Contact the Arewa Lyrics Hub team for account or membership support.
+        </div>
+        <button id="logoutBtn" class="logout">↪ &nbsp; Sign Out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <div class="eyebrow">Member workspace</div>
+          <h1>Dashboard</h1>
+          <div class="subtitle">Your community, creative work and membership in one place.</div>
+        </div>
+        <a href="profile.html" class="user-pill">
+          <div class="avatar" id="avatar">M</div>
+          <div>
+            <strong id="topName">Member</strong>
+            <small id="topMemberId">Member account</small>
+          </div>
+        </a>
+      </header>
+
+      <section class="welcome">
+        <div class="eyebrow">Welcome to your community</div>
+        <h2>Assalamu Alaikum, <span id="welcomeName">Member</span>!</h2>
+        <p>Connect with Hausa music creators, improve your lyrics content, discover artists and take part in community activities.</p>
+        <a href="profile.html" class="button button-yellow">Complete My Profile &nbsp; →</a>
+      </section>
+
+      <div class="section-head">
+        <div>
+          <h2>Your Overview</h2>
+          <p>Account details from your member profile.</p>
+        </div>
+      </div>
+
+      <section class="stats">
+        <article class="stat-card">
+          <div class="stat-top"><small>Membership ID</small><div class="stat-icon">♙</div></div>
+          <h3 id="memberId">Not assigned</h3>
+          <p>Your unique member reference</p>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-top"><small>Account Status</small><div class="stat-icon">✓</div></div>
+          <h3><span id="statusBadge" class="badge">Checking</span></h3>
+          <p>Current membership approval status</p>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-top"><small>Membership Type</small><div class="stat-icon">✦</div></div>
+          <h3 id="membershipType">Member</h3>
+          <p>Your current account category</p>
+        </article>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel">
+          <h3>My Account</h3>
+          <div class="subtitle">Your saved profile information.</div>
+
+          <div class="profile-row">
+            <div class="stat-icon">♙</div>
+            <div><strong>Full Name</strong><small id="fullName">—</small></div>
+          </div>
+          <div class="profile-row">
+            <div class="stat-icon">✉</div>
+            <div><strong>Email Address</strong><small id="email">—</small></div>
+          </div>
+          <div class="profile-row">
+            <div class="stat-icon">◎</div>
+            <div><strong>TikTok Username</strong><small id="tiktok">Not added</small></div>
+          </div>
+          <div class="profile-row">
+            <div class="stat-icon">⌖</div>
+            <div><strong>Location</strong><small id="location">Not added</small></div>
+          </div>
+
+          <div style="margin-top:17px">
+            <a href="profile.html" class="button button-green">Edit Profile →</a>
+          </div>
+        </article>
+
+        <article class="panel">
+          <h3>Quick Access</h3>
+          <div class="subtitle">Explore available community areas.</div>
+
+          <a href="competitions.html" class="profile-row">
+            <div class="stat-icon">🏆</div>
+            <div><strong>Competitions</strong><small>Community challenges and activities</small></div>
+          </a>
+          <a href="members.html" class="profile-row">
+            <div class="stat-icon">♧</div>
+            <div><strong>Member Community</strong><small>Discover community members</small></div>
+          </a>
+          <a href="artists.html" class="profile-row">
+            <div class="stat-icon">♫</div>
+            <div><strong>Artists Directory</strong><small>Explore artists and music creators</small></div>
+          </a>
+          <a href="support.html" class="profile-row">
+            <div class="stat-icon">?</div>
+            <div><strong>Help & Support</strong><small>Get help with your account</small></div>
+          </a>
+        </article>
+      </section>
+
+      <div class="section-head">
+        <div>
+          <h2>Explore Arewa Lyrics Hub</h2>
+          <p>Use search to filter these shortcuts.</p>
+        </div>
+        <div class="search-wrap">
+          <input id="featureSearch" type="search" placeholder="Search dashboard links..." aria-label="Search dashboard links">
+        </div>
+      </div>
+
+      <section class="features" id="featureGrid">
+        <a class="feature-card" data-search="lyrics music hausa content" href="index.html">
+          <div class="stat-icon">♪</div>
+          <h3>Lyrics & Music</h3>
+          <p>Explore Hausa lyrics and music-related content.</p>
+          <span>Explore →</span>
+        </a>
+
+        <a class="feature-card" data-search="competition challenge contest" href="competitions.html">
+          <div class="stat-icon">🏆</div>
+          <h3>Competitions</h3>
+          <p>Find community competitions and challenges.</p>
+          <span>View competitions →</span>
+        </a>
+
+        <a class="feature-card" data-search="members community creators" href="members.html">
+          <div class="stat-icon">♧</div>
+          <h3>Member Community</h3>
+          <p>Find and connect with members.</p>
+          <span>Meet members →</span>
+        </a>
+
+        <a class="feature-card" data-search="artist singer musician directory" href="artists.html">
+          <div class="stat-icon">♫</div>
+          <h3>Artists Directory</h3>
+          <p>Discover artists and their creative work.</p>
+          <span>Discover artists →</span>
+        </a>
+
+        <a class="feature-card" data-search="promotion advertise promote music" href="promotion.html">
+          <div class="stat-icon">↗</div>
+          <h3>Artist Promotion</h3>
+          <p>Learn about music and creator promotion services.</p>
+          <span>Learn more →</span>
+        </a>
+
+        <a class="feature-card" data-search="collaboration work together creators" href="collaboration.html">
+          <div class="stat-icon">♬</div>
+          <h3>Collaboration</h3>
+          <p>Explore opportunities to work with other creators.</p>
+          <span>Explore →</span>
+        </a>
+      </section>
+
+      <footer class="footer">
+        © <span id="year"></span> Arewa Lyrics Hub. All rights reserved.
+      </footer>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // Keep the same Supabase project used by your existing login page.
+    const SUPABASE_URL = "https://vyydpzgkpbefxdxplqla.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_rz2cvizCJOnS-qyBOiISsg_sQJk3wCB";
+
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const $ = (id) => document.getElementById(id);
+
+    function showNotice(title, message, showLogin = false) {
+      $("loading").classList.remove("hidden");
+      $("loading").innerHTML = `
+        <h2>${title}</h2>
+        <p>${message}</p>
+        ${showLogin ? '<a class="button button-green" href="login.html">Go to Login</a>' : ""}
+      `;
+      $("app").classList.add("hidden");
+    }
+
+    function safeText(value, fallback = "Not added") {
+      return value && String(value).trim() ? String(value) : fallback;
+    }
+
+    async function loadDashboard() {
+      $("year").textContent = new Date().getFullYear();
+
+      try {
+        const { data: sessionData, error: sessionError } =
+          await supabaseClient.auth.getSession();
+
+        if (sessionError) throw sessionError;
+
+        const user = sessionData.session?.user;
+
+        if (!user) {
+          window.location.replace("login.html");
+          return;
+        }
+
+        const { data: profile, error } = await supabaseClient
+          .from("profiles")
+          .select("id, full_name, display_name, email, phone, city, state, tiktok_username, role, status, member_id, membership_type")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Profile load error:", error);
+          showNotice(
+            "Unable to load your profile",
+            "Supabase could not load your member information. Check that the profiles table, column names and SELECT policies match this project. Details: " + error.message,
+            true
+          );
+          return;
+        }
+
+        if (!profile) {
+          showNotice(
+            "Profile not found",
+            "Your login is valid, but no matching profile was found. Please contact the site administrator.",
+            true
+          );
+          return;
+        }
+
+        const role = String(profile.role || "member").toLowerCase();
+        const status = String(profile.status || "pending").toLowerCase();
+
+        if (role === "super_admin" || role === "admin" || role === "moderator") {
+          window.location.replace("admin/dashboard.html");
+          return;
+        }
+
+        if (role === "artist" && status === "active") {
+          window.location.replace("artist-dashboard.html");
+          return;
+        }
+
+        if (status !== "active") {
+          let message = "Your membership is awaiting administrator review.";
+
+          if (status === "rejected") {
+            message = "Your membership application was rejected. Please contact support for more information.";
+          } else if (status === "suspended") {
+            message = "Your account is suspended. Please contact support.";
+          }
+
+          showNotice("Membership status: " + status, message, false);
+          return;
+        }
+
+        const name = safeText(
+          profile.display_name || profile.full_name || user.user_metadata?.full_name,
+          "Member"
+        );
+
+        const memberId = safeText(profile.member_id, "Not assigned");
+        const membership = safeText(profile.membership_type, "Member");
+
+        $("welcomeName").textContent = name;
+        $("topName").textContent = name;
+        $("topMemberId").textContent = memberId;
+        $("avatar").textContent = name.charAt(0).toUpperCase();
+        $("memberId").textContent = memberId;
+        $("membershipType").textContent = membership;
+        $("statusBadge").textContent = status;
+        $("fullName").textContent = name;
+        $("email").textContent = safeText(profile.email || user.email, "No email");
+        $("tiktok").textContent = profile.tiktok_username
+          ? "@" + profile.tiktok_username.replace(/^@/, "")
+          : "Not added";
+
+        const location = [profile.city, profile.state].filter(Boolean).join(", ");
+        $("location").textContent = safeText(location);
+
+        $("loading").classList.add("hidden");
+        $("app").classList.remove("hidden");
+
+      } catch (error) {
+        console.error("Dashboard error:", error);
+        showNotice(
+          "Connection error",
+          "The dashboard could not connect to Supabase. Check your internet connection and Supabase configuration. Details: " + (error.message || "Unknown error"),
+          true
+        );
+      }
+    }
+
+    $("logoutBtn").addEventListener("click", async () => {
+      $("logoutBtn").disabled = true;
+      $("logoutBtn").textContent = "Signing out...";
+
+      try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+        window.location.replace("login.html");
+      } catch (error) {
+        console.error("Sign-out error:", error);
+        alert("Could not sign out. Please try again.");
+        $("logoutBtn").disabled = false;
+        $("logoutBtn").textContent = "↪ Sign Out";
+      }
+    });
+
+    $("featureSearch").addEventListener("input", (event) => {
+      const query = event.target.value.toLowerCase().trim();
+
+      document.querySelectorAll(".feature-card").forEach((card) => {
+        const searchableText =
+          (card.innerText + " " + (card.dataset.search || "")).toLowerCase();
+
+        card.classList.toggle("hidden", !searchableText.includes(query));
+      });
+    });
+
+    loadDashboard();
+  </script>
+</body>
+</html>
