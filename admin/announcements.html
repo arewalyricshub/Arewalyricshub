@@ -271,6 +271,31 @@
           <input id="imageUrl" type="url" placeholder="https://example.com/image.jpg">
           <p class="hint">Image upload will be connected through Supabase Storage in the next stage.</p>
 
+<div class="ai-image-generator">
+  <label for="aiImagePrompt">Generate Announcement Image with Arewa AI</label>
+
+  <textarea
+    id="aiImagePrompt"
+    rows="3"
+    placeholder="Describe the image you want. Example: A premium Hausa music announcement poster..."
+  ></textarea>
+
+  <button class="gold" type="button" id="generateImageButton">
+    Generate Image with Arewa AI
+  </button>
+
+  <p class="hint" id="aiImageStatus">
+    Describe your image, then tap Generate Image.
+  </p>
+
+  <img
+    id="aiGeneratedImage"
+    alt="AI-generated announcement image"
+    class="hidden"
+    style="max-width:100%;border-radius:12px;margin-top:12px;"
+  >
+</div>
+          
           <label for="videoUrl">Video URL (Optional)</label>
           <input id="videoUrl" type="url" placeholder="https://example.com/video.mp4">
 
