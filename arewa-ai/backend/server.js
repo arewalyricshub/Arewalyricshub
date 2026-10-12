@@ -87,6 +87,80 @@ music, lyrics, artists and creative services.
     }
 });
 
+/* =========================================
+   AREWA AI — ANNOUNCEMENT IMAGE GENERATOR
+   ========================================= */
+
+app.post("/api/generate-image", async (req, res) => {
+    try {
+        const { prompt } = req.body || {};
+
+        if (typeof prompt !== "string" || !prompt.trim()) {
+            return res.status(400).json({
+                error: "Please describe the image you want."
+            });
+        }
+
+        if (prompt.trim().length > 4000) {
+            return res.status(400).json({
+                error: "Image description must be 4000 characters or fewer."
+            });
+        }
+
+        if (!process.env.OPENAI_API_KEY) {
+            return res.status(500).json({
+                error: "Image generation is not configured on the server."
+            });
+        }
+
+        const image = await client.images.generate({
+            model: "gpt-image-1.5",
+            prompt: `
+Create a premium announcement poster for Arewa Lyrics Hub.
+
+Visual identity:
+- Dark green, white and gold
+- Professional Hausa/Arewa creative brand
+- Clean, modern layout
+- High-quality graphic design
+- Clear visual hierarchy
+- Suitable for a website announcement
+
+User's requested design:
+${prompt.trim()}
+`,
+            size: "1024x1024",
+            quality: "low",
+            output_format: "png",
+            n: 1
+        });
+
+        const generatedImage = image.data?.[0]?.b64_json;
+
+        if (!generatedImage) {
+            return res.status(502).json({
+                error: "The image service returned no image. Please try again."
+            });
+        }
+
+        return res.json({
+            success: true,
+            image: generatedImage,
+            mimeType: "image/png"
+        });
+
+    } catch (error) {
+        console.error(
+            "IMAGE GENERATION ERROR:",
+            error?.message || error
+        );
+
+        return res.status(500).json({
+            error: "Could not generate the image. Check the server logs and API access."
+        });
+    }
+});
+        
 // Start server
 app.listen(PORT, "0.0.0.0", () => {
     console.log(
