@@ -262,4 +262,619 @@
             <option value="Everyone">Everyone</option>
             <option value="Members">Members</option>
             <option value="Artists">Artists</option>
-            <option value="Record Label Artists">Record Label Artists
+            <option value="Record Label Artists">Record Label Artists            </option>
+            <option value="Individual Artists">Individual Artists</option>
+            <option value="Promotion Artists">Promotion Artists</option>
+          </select>
+
+          <label for="imageUrl">Image URL (Optional)</label>
+          <input id="imageUrl" type="url" placeholder="https://example.com/image.jpg">
+          <p class="hint">Image upload will be connected through Supabase Storage in the next stage.</p>
+
+          <label for="videoUrl">Video URL (Optional)</label>
+          <input id="videoUrl" type="url" placeholder="https://example.com/video.mp4">
+
+          <div class="buttons">
+            <button class="primary" type="submit" id="publishButton">Publish Announcement</button>
+            <button class="gold" type="button" id="draftButton">Save Draft</button>
+            <button class="secondary hidden" type="button" id="cancelEditButton">Cancel Edit</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>Announcements</h2>
+        <p class="hint">View, edit, publish, unpublish, or delete announcements.</p>
+        <div id="announcementList">
+          <p class="empty">Loading announcements...</p>
+        </div>
+      </section>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  "use strict";
+
+  /*
+    Keep the Supabase project URL and publishable key
+    from your existing working setup.
+    Never put a service_role or secret key in this file.
+  */
+  const SUPABASE_URL = "PASTE_YOUR_SUPABASE_PROJECT_URL_HERE";
+  const SUPABASE_PUBLISHABLE_KEY = "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE";
+
+  const statusBox = document.getElementById("status");
+  const loginPanel = document.getElementById("loginPanel");
+  const appPanel = document.getElementById("appPanel");
+  const loginForm = document.getElementById("loginForm");
+  const announcementForm = document.getElementById("announcementForm");
+  const announcementList = document.getElementById("announcementList");
+
+  const titleInput = document.getElementById("title");
+  const contentInput = document.getElementById("content");
+  const audienceInput = document.getElementById("audience");
+  const imageUrlInput = document.getElementById("imageUrl");
+  const videoUrlInput = document.getElementById("videoUrl");
+
+  const publishButton = document.getElementById("publishButton");
+  const draftButton = document.getElementById("draftButton");
+  const cancelEditButton = document.getElementById("cancelEditButton");
+  const formHeading = document.getElementById("formHeading");
+
+  let supabase = null;
+  let currentUser = null;
+  let editingId = null;
+  let announcements = [];
+
+  function showStatus(message, type = "info") {
+    statusBox.textContent = message;
+    statusBox.className = "status show " + type;
+  }
+
+  function clearStatus() {
+    statusBox.textContent = "";
+    statusBox.className = "status";
+  }
+
+  function setBusy(button, busy, busyText, normalText) {
+    button.disabled = busy;
+    button.textContent = busy ? busyText : normalText;
+  }
+
+  function showLogin() {
+    loginPanel.classList.remove("hidden");
+    appPanel.classList.add("hidden");
+  }
+
+  function showWorkspace() {
+    loginPanel.classList.add("hidden");
+    appPanel.classList.remove("hidden");
+  }
+
+  function safeDate(value) {
+    if (!value) return "Date unavailable";
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return "Date unavailable";
+    }
+
+    return date.toLocaleString();
+  }
+
+  function addText(parent, tag, text, className) {
+    const element = document.createElement(tag);
+    element.textContent = text || "";
+
+    if (className) {
+      element.className = className;
+    }
+
+    parent.appendChild(element);
+    return element;
+  }
+
+  function addActionButton(parent, label, className, handler) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = className;
+    button.textContent = label;
+    button.addEventListener("click", handler);
+    parent.appendChild(button);
+    return button;
+  }
+
+  async function checkActiveAdmin(user) {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, role, status, email")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error("Could not verify admin access: " + error.message);
+    }
+
+    if (
+      !data ||
+      !["admin", "super_admin"].includes(data.role) ||
+      data.status !== "active"
+    ) {
+      throw new Error(
+        "Access denied. An active admin or super admin account is required."
+      );
+    }
+
+    return data;
+  }
+
+  async function restoreSession() {
+    clearStatus();
+
+    const { data, error } = await supabase.auth.getSession();
+
+    if (error) {
+      showLogin();
+      showStatus("Could not restore session: " + error.message, "error");
+      return;
+    }
+
+    if (!data.session) {
+      showLogin();
+      return;
+    }
+
+    try {
+      currentUser = data.session.user;
+      await checkActiveAdmin(currentUser);
+      showWorkspace();
+      await loadAnnouncements();
+    } catch (err) {
+      showLogin();
+      showStatus(err.message, "error");
+    }
+  }
+
+  loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    clearStatus();
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    const button = loginForm.querySelector('button[type="submit"]');
+    setBusy(button, true, "Signing In...", "Sign In");
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+
+      currentUser = data.user;
+      await checkActiveAdmin(currentUser);
+
+      showWorkspace();
+      showStatus("Admin sign-in successful.", "success");
+      await loadAnnouncements();
+    } catch (err) {
+      showLogin();
+      showStatus(err.message || "Sign-in failed.", "error");
+    } finally {
+      setBusy(button, false, "Signing In...", "Sign In");
+    }
+  });
+
+  async function loadAnnouncements() {
+    announcementList.replaceChildren();
+    addText(announcementList, "p", "Loading announcements...", "empty");
+
+    const { data, error } = await supabase
+      .from("announcements")
+      .select(
+        "id, title, content, audience, is_published, created_at, updated_at, created_by"
+      )
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      announcementList.replaceChildren();
+      addText(
+        announcementList,
+        "p",
+        "Could not load announcements: " + error.message,
+        "empty"
+      );
+      return;
+    }
+
+    announcements = data || [];
+    renderAnnouncements();
+  }
+
+  function renderAnnouncements() {
+    announcementList.replaceChildren();
+
+    if (!announcements.length) {
+      addText(
+        announcementList,
+        "p",
+        "No announcements yet. Create your first announcement.",
+        "empty"
+      );
+      return;
+    }
+
+    announcements.forEach((item) => {
+      const card = document.createElement("article");
+      card.className = "announcement";
+
+      addText(card, "h3", item.title);
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent =
+        safeDate(item.created_at) +
+        " · " +
+        (item.is_published ? "Published" : "Draft");
+      card.appendChild(meta);
+
+      const audience = document.createElement("span");
+      audience.className = "pill";
+      audience.textContent = item.audience || "Everyone";
+      card.appendChild(audience);
+
+      const publication = document.createElement("span");
+      publication.className = "pill";
+      publication.textContent = item.is_published ? "Published" : "Draft";
+      card.appendChild(publication);
+
+      addText(card, "p", item.content);
+
+      addText(
+        card,
+        "p",
+        "Last updated: " + safeDate(item.updated_at),
+        "meta"
+      );
+
+      const actions = document.createElement("div");
+      actions.className = "buttons";
+
+      addActionButton(actions, "Edit", "secondary", () => {
+        startEdit(item);
+      });
+
+      addActionButton(
+        actions,
+        item.is_published ? "Unpublish" : "Publish",
+        "gold",
+        () => togglePublication(item)
+      );
+
+      addActionButton(actions, "Delete", "danger", () => {
+        deleteAnnouncement(item);
+      });
+
+      card.appendChild(actions);
+      announcementList.appendChild(card);
+    });
+  }
+
+  function startEdit(item) {
+    editingId = item.id;
+
+    titleInput.value = item.title || "";
+    contentInput.value = item.content || "";
+    audienceInput.value = item.audience || "";
+    imageUrlInput.value = "";
+    videoUrlInput.value = "";
+
+    formHeading.textContent = "Edit Announcement";
+    publishButton.textContent = "Update and Publish";
+    draftButton.textContent = "Update Draft";
+    cancelEditButton.classList.remove("hidden");
+
+    showStatus(
+      "Editing selected announcement. Existing media URLs are not stored by this form yet.",
+      "info"
+    );
+
+    announcementForm.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }
+
+  function resetForm() {
+    editingId = null;
+    announcementForm.reset();
+
+    formHeading.textContent = "Create Announcement";
+    publishButton.textContent = "Publish Announcement";
+    draftButton.textContent = "Save Draft";
+    cancelEditButton.classList.add("hidden");
+  }
+
+  cancelEditButton.addEventListener("click", () => {
+    resetForm();
+    clearStatus();
+  });
+
+  function getFormValues() {
+    const title = titleInput.value.trim();
+    const content = contentInput.value.trim();
+    const audience = audienceInput.value;
+
+    if (!title || !content) {
+      throw new Error("Enter both an announcement title and content.");
+    }
+
+    if (!audience) {
+      throw new Error("Please select a target audience.");
+    }
+
+    const allowedAudiences = [
+      "Everyone",
+      "Members",
+      "Artists",
+      "Record Label Artists",
+      "Individual Artists",
+      "Promotion Artists"
+    ];
+
+    if (!allowedAudiences.includes(audience)) {
+      throw new Error("Please select a valid target audience.");
+    }
+
+    /*
+      The current table schema does not contain image_url or video_url.
+      These inputs are retained without pretending that media is saved.
+      Storage and media columns will be connected in the next stage.
+    */
+    return {
+      title,
+      content,
+      audience,
+      imageUrl: imageUrlInput.value.trim(),
+      videoUrl: videoUrlInput.value.trim()
+    };
+  }
+
+  async function saveAnnouncement(isPublished) {
+    clearStatus();
+
+    let values;
+
+    try {
+      values = getFormValues();
+    } catch (err) {
+      showStatus(err.message, "error");
+      return;
+    }
+
+    const button = isPublished ? publishButton : draftButton;
+    const originalText = button.textContent;
+
+    setBusy(
+      button,
+      true,
+      "Saving...",
+      originalText
+    );
+
+    try {
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession();
+
+      if (sessionError) throw sessionError;
+
+      if (!sessionData.session) {
+        throw new Error("Your session has expired. Please sign in again.");
+      }
+
+      currentUser = sessionData.session.user;
+      await checkActiveAdmin(currentUser);
+
+      const payload = {
+        title: values.title,
+        content: values.content,
+        audience: values.audience,
+        is_published: isPublished,
+        updated_at: new Date().toISOString()
+      };
+
+      let result;
+
+      if (editingId) {
+        result = await supabase
+          .from("announcements")
+          .update(payload)
+          .eq("id", editingId)
+          .select("id")
+          .single();
+      } else {
+        payload.created_by = currentUser.id;
+
+        result = await supabase
+          .from("announcements")
+          .insert(payload)
+          .select("id")
+          .single();
+      }
+
+      if (result.error) throw result.error;
+
+      resetForm();
+
+      showStatus(
+        isPublished
+          ? "Announcement published successfully."
+          : "Draft saved successfully.",
+        "success"
+      );
+
+      await loadAnnouncements();
+    } catch (err) {
+      showStatus(
+        "Could not save announcement: " + (err.message || "Unknown error"),
+        "error"
+      );
+    } finally {
+      setBusy(button, false, "Saving...", originalText);
+    }
+  }
+
+  announcementForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await saveAnnouncement(true);
+  });
+
+  draftButton.addEventListener("click", async () => {
+    await saveAnnouncement(false);
+  });
+
+  async function togglePublication(item) {
+    const nextState = !item.is_published;
+
+    const message = nextState
+      ? "Publish this announcement?"
+      : "Unpublish this announcement?";
+
+    if (!window.confirm(message)) return;
+
+    clearStatus();
+
+    try {
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession();
+
+      if (sessionError) throw sessionError;
+      if (!sessionData.session) {
+        throw new Error("Please sign in again.");
+      }
+
+      currentUser = sessionData.session.user;
+      await checkActiveAdmin(currentUser);
+
+      const { error } = await supabase
+        .from("announcements")
+        .update({
+          is_published: nextState,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", item.id);
+
+      if (error) throw error;
+
+      showStatus(
+        nextState
+          ? "Announcement published."
+          : "Announcement unpublished.",
+        "success"
+      );
+
+      await loadAnnouncements();
+    } catch (err) {
+      showStatus(err.message, "error");
+    }
+  }
+
+  async function deleteAnnouncement(item) {
+    if (
+      !window.confirm(
+        'Delete "' + item.title + '" permanently? This cannot be undone.'
+      )
+    ) {
+      return;
+    }
+
+    clearStatus();
+
+    try {
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession();
+
+      if (sessionError) throw sessionError;
+      if (!sessionData.session) {
+        throw new Error("Please sign in again.");
+      }
+
+      currentUser = sessionData.session.user;
+      await checkActiveAdmin(currentUser);
+
+      const { error } = await supabase
+        .from("announcements")
+        .delete()
+        .eq("id", item.id);
+
+      if (error) throw error;
+
+      if (editingId === item.id) {
+        resetForm();
+      }
+
+      showStatus("Announcement deleted.", "success");
+      await loadAnnouncements();
+    } catch (err) {
+      showStatus(
+        "Could not delete announcement: " + err.message,
+        "error"
+      );
+    }
+  }
+
+  async function initialise() {
+    if (
+      SUPABASE_URL.includes("PASTE_YOUR_") ||
+      SUPABASE_PUBLISHABLE_KEY.includes("PASTE_YOUR_")
+    ) {
+      showLogin();
+      showStatus(
+        "Setup required: insert the same Supabase project URL and publishable key used by your working site.",
+        "error"
+      );
+      return;
+    }
+
+    try {
+      const client = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY,
+        {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
+          }
+        }
+      );
+
+      supabase = client;
+
+      await restoreSession();
+
+      supabase.auth.onAuthStateChange((event, session) => {
+        if (event === "SIGNED_OUT" || !session) {
+          currentUser = null;
+          showLogin();
+        }
+      });
+    } catch (err) {
+      showLogin();
+      showStatus(
+        "Initialisation failed: " + (err.message || "Unknown error"),
+        "error"
+      );
+    }
+  }
+
+  initialise();
+})();
+</script>
+</body>
+  </html>
