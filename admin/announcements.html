@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b3d2e">
+  <title>Announcements | Arewa Lyrics Hub</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --green: #0b3d2e;
+      --green-dark: #071c16;
+      --gold: #c9a227;
+      --white: #fff;
+      --bg: #f5f7f5;
+      --text: #17231d;
+      --muted: #66736b;
+      --border: #e1e7e2;
+      --danger: #b42318;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    header {
+      background: var(--green);
+      color: var(--white);
+      padding: 18px 22px;
+      border-bottom: 3px solid var(--gold);
+    }
+
+    .header-inner {
+      max-width: 1150px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    header h1 { margin: 0; font-size: 21px; }
+    header p { margin: 5px 0 0; font-size: 13px; opacity: .85; }
+
+    a { color: var(--green); }
+
+    .back-link {
+      color: white;
+      border: 1px solid #ffffff66;
+      border-radius: 8px;
+      padding: 10px 13px;
+      text-decoration: none;
+      font-size: 13px;
+    }
+
+    main {
+      max-width: 1150px;
+      margin: 25px auto;
+      padding: 0 15px 35px;
+    }
+
+    .notice {
+      background: #fff8e5;
+      border: 1px solid #ead9a0;
+      padding: 12px 14px;
+      border-radius: 9px;
+      font-size: 13px;
+      margin-bottom: 18px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 20px;
+      box-shadow: 0 4px 18px #0b3d2e08;
+      min-width: 0;
+    }
+
+    h2 { font-size: 18px; margin: 0 0 18px; }
+
+    label {
+      display: block;
+      font-weight: 700;
+      font-size: 13px;
+      margin: 15px 0 7px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cfd8d1;
+      border-radius: 8px;
+      background: white;
+      color: var(--text);
+      font: inherit;
+      font-size: 14px;
+    }
+
+    textarea { min-height: 150px; resize: vertical; }
+
+    input:focus, textarea:focus, select:focus {
+      outline: 2px solid #0b3d2e25;
+      border-color: var(--green);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+      margin-top: 6px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    button:disabled { opacity: .6; cursor: wait; }
+
+    .primary { background: var(--green); color: white; }
+    .gold { background: var(--gold); color: #17231d; }
+    .secondary { background: #edf1ee; color: var(--green); }
+    .danger { background: #fff0ef; color: var(--danger); }
+
+    .status {
+      margin: 0 0 16px;
+      padding: 11px 13px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+      display: none;
+      overflow-wrap: anywhere;
+    }
+
+    .status.show { display: block; }
+    .status.error { background: #fff0ef; color: #9b1c13; }
+    .status.success { background: #e9f7ed; color: #176b35; }
+    .status.info { background: #edf4ff; color: #174c8a; }
+
+    .announcement {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .announcement h3 { font-size: 16px; margin: 0 0 8px; }
+    .announcement p {
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: 11px;
+      margin: 8px 0;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 5px 8px;
+      border-radius: 30px;
+      background: #eaf2ed;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 700;
+      margin: 0 4px 4px 0;
+    }
+
+    .empty { color: var(--muted); font-size: 13px; }
+
+    .auth-box {
+      max-width: 460px;
+      margin: 45px auto;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 800px) {
+      .layout { grid-template-columns: 1fr; }
+      main { margin-top: 16px; }
+      .panel { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <div>
+      <h1>AREWA LYRICS HUB</h1>
+      <p>Announcements Management</p>
+    </div>
+    <a class="back-link" href="./dashboard.html">← Admin Dashboard</a>
+  </div>
+</header>
+
+<main>
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+
+  <section id="loginPanel" class="panel auth-box hidden">
+    <h2>Admin Sign In</h2>
+    <p class="hint">Sign in to manage announcements. Your password is sent only to Supabase Authentication.</p>
+    <form id="loginForm">
+      <label for="email">Admin Email</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <div class="buttons">
+        <button class="primary" type="submit">Sign In</button>
+      </div>
+    </form>
+  </section>
+
+  <section id="appPanel" class="hidden">
+    <div class="notice">
+      <strong>Admin workspace:</strong> Choose the intended audience before publishing.
+      Media uploads and AI image generation will be connected in the next stage.
+    </div>
+
+    <div class="layout">
+      <section class="panel">
+        <h2 id="formHeading">Create Announcement</h2>
+
+        <form id="announcementForm">
+          <label for="title">Announcement Title</label>
+          <input id="title" maxlength="180" required placeholder="Enter announcement title">
+
+          <label for="content">Announcement Content</label>
+          <textarea id="content" required placeholder="Write your announcement..."></textarea>
+
+          <label for="audience">Target Audience</label>
+          <select id="audience" required>
+            <option value="" selected disabled>Select audience</option>
+            <option value="Everyone">Everyone</option>
+            <option value="Members">Members</option>
+            <option value="Artists">Artists</option>
+            <option value="Record Label Artists">Record Label Artists
