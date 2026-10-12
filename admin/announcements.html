@@ -267,9 +267,33 @@
             <option value="Promotion Artists">Promotion Artists</option>
           </select>
 
-          <label for="imageUrl">Image URL (Optional)</label>
-          <input id="imageUrl" type="url" placeholder="https://example.com/image.jpg">
-          <p class="hint">Image upload will be connected through Supabase Storage in the next stage.</p>
+          
+<label for="imageUrl">Announcement Image URL</label>
+<input
+  id="imageUrl"
+  type="url"
+  placeholder="Image URL will appear here after upload"
+>
+
+<label for="galleryImage">Choose Image from Gallery</label>
+<input
+  id="galleryImage"
+  type="file"
+  accept="image/png,image/jpeg,image/webp"
+>
+
+<div id="galleryPreviewBox" hidden>
+  <img
+    id="galleryPreview"
+    alt="Selected announcement image"
+    style="width:100%;max-width:420px;border-radius:12px;margin-top:12px;"
+  >
+  <button type="button" id="uploadGalleryButton" class="gold">
+    Upload Gallery Image to Supabase
+  </button>
+</div>
+
+<hr>
 
 <div class="ai-image-generator">
   <label for="aiImagePrompt">Generate Announcement Image with Arewa AI</label>
@@ -277,7 +301,7 @@
   <textarea
     id="aiImagePrompt"
     rows="3"
-    placeholder="Describe the image you want. Example: A premium Hausa music announcement poster..."
+    placeholder="Describe the announcement image you want..."
   ></textarea>
 
   <button class="gold" type="button" id="generateImageButton">
@@ -288,18 +312,34 @@
     Describe your image, then tap Generate Image.
   </p>
 
-  <img
-    id="aiGeneratedImage"
-    alt="AI-generated announcement image"
-    class="hidden"
-    style="max-width:100%;border-radius:12px;margin-top:12px;"
-  >
-</div>
-          
-          <label for="videoUrl">Video URL (Optional)</label>
-          <input id="videoUrl" type="url" placeholder="https://example.com/video.mp4">
+  <div id="aiImageActions" hidden>
+    <img
+      id="aiGeneratedImage"
+      alt="AI-generated announcement image"
+      style="width:100%;max-width:420px;border-radius:12px;margin-top:12px;"
+    >
 
-          <div class="buttons">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+      <button type="button" id="downloadAIImageButton">
+        Save Image to Phone
+      </button>
+
+      <button type="button" id="uploadAIImageButton" class="gold">
+        Upload AI Image to Supabase
+      </button>
+    </div>
+  </div>
+</div>
+
+<label for="videoUrl">Video URL (Optional)</label>
+<input
+  id="videoUrl"
+  type="url"
+  placeholder="https://example.com/video.mp4"
+>
+          
+
+         <div class="buttons">
             <button class="primary" type="submit" id="publishButton">Publish Announcement</button>
             <button class="gold" type="button" id="draftButton">Save Draft</button>
             <button class="secondary hidden" type="button" id="cancelEditButton">Cancel Edit</button>
