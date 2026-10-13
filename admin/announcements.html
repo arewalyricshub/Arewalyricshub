@@ -383,6 +383,48 @@
   const imageUrlInput = document.getElementById("imageUrl");
   const videoUrlInput = document.getElementById("videoUrl");
 
+  const galleryImageInput = document.getElementById("galleryImage");
+  const galleryPreviewBox = document.getElementById("galleryPreviewBox");
+  const galleryPreview = document.getElementById("galleryPreview");
+  const uploadGalleryButton = document.getElementById("uploadGalleryButton");
+
+  let selectedGalleryFile = null;
+
+  if (galleryImageInput) {
+    galleryImageInput.addEventListener("change", () => {
+      const file = galleryImageInput.files?.[0];
+
+      selectedGalleryFile = null;
+
+      if (!file) {
+        if (galleryPreviewBox) galleryPreviewBox.hidden = true;
+        return;
+      }
+
+      const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
+
+      if (!allowedTypes.includes(file.type)) {
+        showStatus("Zaɓi PNG, JPG ko WEBP kawai.", "error");
+        galleryImageInput.value = "";
+        galleryPreviewBox.hidden = true;
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        showStatus("Hoton bai kamata ya wuce 5 MB ba.", "error");
+        galleryImageInput.value = "";
+        galleryPreviewBox.hidden = true;
+        return;
+      }
+
+      selectedGalleryFile = file;
+      galleryPreview.src = URL.createObjectURL(file);
+      galleryPreviewBox.hidden = false;
+
+      showStatus("An zaɓi hoto. Danna Upload Gallery Image to Supabase.", "success");
+    });
+        }
+  
   const publishButton = document.getElementById("publishButton");
   const draftButton = document.getElementById("draftButton");
   const cancelEditButton = document.getElementById("cancelEditButton");
