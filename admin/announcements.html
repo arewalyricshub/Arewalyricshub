@@ -848,13 +848,16 @@ if (uploadGalleryButton) {
       currentUser = sessionData.session.user;
       await checkActiveAdmin(currentUser);
 
-      const payload = {
-        title: values.title,
-        content: values.content,
-        audience: values.audience,
-        is_published: isPublished,
-        updated_at: new Date().toISOString()
-      };
+      
+const payload = {
+  title: values.title,
+  content: values.content,
+  audience: values.audience,
+  image_url: imageUrlInput.value.trim() || null,
+  is_published: isPublished,
+  updated_at: new Date().toISOString()
+};
+      
 
       let result;
 
