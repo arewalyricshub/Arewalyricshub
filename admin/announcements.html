@@ -390,6 +390,67 @@
 
   let selectedGalleryFile = null;
 
+async function uploadAnnouncementImage(file, button) {
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
+
+  if (sessionError) throw sessionError;
+
+  if (!sessionData.session) {
+    throw new Error("Please sign in again.");
+  }
+
+  currentUser = sessionData.session.user;
+  await checkActiveAdmin(currentUser);
+
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const filePath =
+    `${currentUser.id}/${Date.now()}-${safeName}`;
+
+  const originalText = button.textContent;
+  setBusy(button, true, "Uploading...", originalText);
+
+  try {
+    const { data, error } = await supabase.storage
+      .from("announcement-images")
+      .upload(filePath, file, {
+        contentType: file.type,
+        cacheControl: "3600",
+        upsert: false
+      });
+
+    if (error) throw error;
+
+    const { data: urlData } = supabase.storage
+      .from("announcement-images")
+      .getPublicUrl(data.path);
+
+    imageUrlInput.value = urlData.publicUrl;
+
+    showStatus("An ɗora hoton. Ka adana sanarwar don ajiye shi.", "success");
+  } finally {
+    setBusy(button, false, "Uploading...", originalText);
+  }
+}
+
+if (uploadGalleryButton) {
+  uploadGalleryButton.addEventListener("click", async () => {
+    if (!selectedGalleryFile) {
+      showStatus("Da farko ka zaɓi hoto daga Gallery.", "error");
+      return;
+    }
+
+    try {
+      await uploadAnnouncementImage(
+        selectedGalleryFile,
+        uploadGalleryButton
+      );
+    } catch (error) {
+      showStatus("Upload failed: " + error.message, "error");
+    }
+  });
+    }
+  
   if (galleryImageInput) {
     galleryImageInput.addEventListener("change", () => {
       const file = galleryImageInput.files?.[0];
