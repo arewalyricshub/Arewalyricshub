@@ -136,7 +136,10 @@ select:focus {
           email,
           password,
           options: {
-            data: { full_name: fullName },
+            data: {
+  full_name: fullName,
+  account_type: accountType
+},
             emailRedirectTo: window.location.origin + window.location.pathname.replace(/register\.html$/, "login.html")
           }
         });
