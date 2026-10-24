@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b3d2e">
+  <title>Notifications | Arewa Lyrics Hub</title>
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f7f4;
+      color: #18352a;
+    }
+    header {
+      background: #0b3d2e;
+      color: white;
+      padding: 20px;
+    }
+    header h1 { margin: 0 0 8px; font-size: 23px; }
+    header p { margin: 0; color: #e0eee6; }
+    main { max-width: 850px; margin: 24px auto; padding: 0 15px 30px; }
+    .card {
+      background: white;
+      border: 1px solid #dce8df;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 5px 18px #123b2808;
+    }
+    h2 { margin-top: 0; font-size: 19px; color: #0b3d2e; }
+    label { display: block; margin: 15px 0 7px; font-weight: bold; }
+    input, select, textarea {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd8cf;
+      border-radius: 8px;
+      background: white;
+      font: inherit;
+    }
+    textarea { min-height: 120px; resize: vertical; }
+    button {
+      border: 0;
+      border-radius: 8px;
+      background: #0b3d2e;
+      color: white;
+      font-weight: bold;
+      padding: 12px 16px;
+      margin-top: 16px;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .55; cursor: wait; }
+    .secondary { background: #e8f0eb; color: #0b3d2e; }
+    .notice {
+      display: none;
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 8px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+    .success { display: block; background: #e5f7ec; color: #17633a; }
+    .error { display: block; background: #fff0ed; color: #a12c20; }
+    .item {
+      border: 1px solid #dce8df;
+      border-radius: 10px;
+      padding: 14px;
+      margin-top: 12px;
+      overflow-wrap: anywhere;
+    }
+    .item h3 { margin: 0 0 8px; font-size: 16px; }
+    .meta { color: #687970; font-size: 13px; line-height: 1.6; }
+    .hidden { display: none !important; }
+    .toplinks { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+    a { color: #d6b85a; }
+    @media (max-width: 480px) {
+      .card { padding: 16px; }
+      header { padding: 18px 15px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Arewa Lyrics Hub</h1>
+    <p>Announcements &amp; Notifications</p>
+    <div class="toplinks">
+      <a href="../index.html">View Homepage</a>
+      <a href="dashboard.html">Admin Dashboard</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="card">
+      <h2>Admin Access</h2>
+      <p id="accessText">Checking your admin permissions...</p>
+      <button id="retryButton" class="secondary hidden" type="button">Check Again</button>
+      <div id="accessMessage" class="notice" role="status" aria-live="polite"></div>
+    </div>
+
+    <section id="adminPanel" class="hidden">
+      <div class="card">
+        <h2>Create Announcement or Notification</h2>
+        <p>General announcements are intended for the homepage. Personal notifications are for one selected user.</p>
+
+        <form id="sendForm">
+          <label for="kind">Message type</label>
+          <select id="kind" required>
+            <option value="announcement">General announcement (homepage)</option>
+            <option value="personal">Personal notification (one user)</option>
+          </select>
+
+          <div id="recipientWrap" class="hidden">
+            <label for="recipient">Recipient user ID (UUID)</label>
+            <input id="recipient" placeholder="Paste the user's Supabase Auth ID">
+            <p class="meta">Use the recipient's actual Auth UUID from your trusted admin records. Do not use their email as a user ID.</p>
+          </div>
+
+          <label for="title">Title</label>
+          <input id="title" maxlength="150" required placeholder="Enter message title">
+
+          <label for="bodyText">Message</label>
+          <textarea id="bodyText" maxlength="5000" required placeholder="Write your announcement or message..."></textarea>
+
+          <button id="sendButton" type="submit">Publish Announcement</button>
+          <div id="sendMessage" class="notice" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Recent Announcements</h2>
+        <button id="refreshButton" class="secondary" type="button">Refresh List</button>
+        <div id="history"><p class="meta">Loading announcements...</p></div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    const supabase = createClient(
+      "https://vyydpzgkpbefxdxplqla.supabase.co",
+      "sb_publishable_rz2cvizCJOnS-qyBOiISsg_sQJk3wCB"
+    );
+
+    const accessText = document.getElementById("accessText");
+    const accessMessage = document.getElementById("accessMessage");
+    const retryButton = document.getElementById("retryButton");
+    const adminPanel = document.getElementById("adminPanel");
+    const kind = document.getElementById("kind");
+    const recipientWrap = document.getElementById("recipientWrap");
+    const recipient = document.getElementById("recipient");
+    const title = document.getElementById("title");
+    const bodyText = document.getElementById("bodyText");
+    const sendForm = document.getElementById("sendForm");
+    const sendButton = document.getElementById("sendButton");
+    const sendMessage = document.getElementById("sendMessage");
+    const history = document.getElementById("history");
+
+    function showNotice(element, text, success = false) {
+      element.className = "notice " + (success ? "success" : "error");
+      element.textContent = text;
+    }
+
+    function clearNotice(element) {
+      element.className = "notice";
+      element.textContent = "";
+    }
+
+    function updateKind() {
+      const personal = kind.value === "personal";
+      recipientWrap.classList.toggle("hidden", !personal);
+      recipient.required = personal;
+      sendButton.textContent = personal ? "Send Personal Notification" : "Publish Announcement";
+    }
+
+    kind.addEventListener("change", updateKind);
+    updateKind();
+
+    async function checkAdmin() {
+      adminPanel.classList.add("hidden");
+      retryButton.classList.add("hidden");
+      accessText.textContent = "Checking your admin permissions...";
+      clearNotice(accessMessage);
+
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError) throw userError;
+
+        if (!user) {
+          accessText.textContent = "You must log in as an authorized admin.";
+          showNotice(accessMessage, "Please log in with your admin account, then open this page again.");
+          retryButton.classList.remove("hidden");
+          return;
+        }
+
+        const { data: allowed, error: adminError } = await supabase.rpc("is_admin");
+        if (adminError) throw adminError;
+
+        if (allowed !== true) {
+          accessText.textContent = "Admin access denied.";
+          showNotice(accessMessage, "Your current account does not have admin permission.");
+          retryButton.classList.remove("hidden");
+          return;
+        }
+
+        accessText.textContent = "Admin access verified.";
+        showNotice(accessMessage, "You are authorized to use this page.", true);
+        adminPanel.classList.remove("hidden");
+        await loadHistory();
+      } catch (error) {
+        accessText.textContent = "Could not verify admin access.";
+        showNotice(accessMessage, error.message || "Please check your login and database permissions.");
+        retryButton.classList.remove("hidden");
+      }
+    }
+
+    async function loadHistory() {
+      history.replaceChildren();
+      const loading = document.createElement("p");
+      loading.className = "meta";
+      loading.textContent = "Loading announcements...";
+      history.appendChild(loading);
+
+      try {
+        const { data, error } = await supabase
+          .from("announcements")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(30);
+
+        if (error) throw error;
+
+        history.replaceChildren();
+
+        if (!data || data.length === 0) {
+          const empty = document.createElement("p");
+          empty.className = "meta";
+          empty.textContent = "No announcements found.";
+          history.appendChild(empty);
+          return;
+        }
+
+        for (const row of data) {
+          const item = document.createElement("article");
+          item.className = "item";
+
+          const heading = document.createElement("h3");
+          heading.textContent = row.title || "Announcement";
+
+          const content = document.createElement("p");
+          content.textContent = row.content || row.message || row.body || "";
+
+          const meta = document.createElement("p");
+          meta.className = "meta";
+          const date = row.created_at ? new Date(row.created_at).toLocaleString() : "Date unavailable";
+          meta.textContent = "Created: " + date +
+            (row.is_published === false ? " · Not published" : " · Published");
+
+          item.append(heading, content, meta);
+          history.appendChild(item);
+        }
+      } catch (error) {
+        history.replaceChildren();
+        const err = document.createElement("p");
+        err.className = "meta";
+        err.textContent = "Could not load announcement history: " + (error.message || "Database error");
+        history.appendChild(err);
+      }
+    }
+
+    sendForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      clearNotice(sendMessage);
+      sendButton.disabled = true;
+
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError) throw userError;
+        if (!user) throw new Error("Your login session has expired. Please log in again.");
+
+        const { data: allowed, error: adminError } = await supabase.rpc("is_admin");
+        if (adminError) throw adminError;
+        if (allowed !== true) throw new Error("You are not authorized to send messages.");
+
+        const messageTitle = title.value.trim();
+        const messageBody = bodyText.value.trim();
+        if (!messageTitle || !messageBody) throw new Error("Please enter both a title and a message.");
+
+        if (kind.value === "announcement") {
+          // This uses the existing announcements table. RLS remains enforced by Supabase.
+          const { error } = await supabase.from("announcements").insert({
+            title: messageTitle,
+            content: messageBody,
+            is_published: true
+          });
+
+          if (error) throw error;
+
+          showNotice(sendMessage, "Announcement published to the database. Homepage display must also be connected to this table.", true);
+          sendForm.reset();
+          updateKind();
+          await loadHistory();
+        } else {
+          const userId = recipient.value.trim();
+          const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+          if (!uuidPattern.test(userId)) {
+            throw new Error("Enter a valid recipient Auth UUID.");
+          }
+
+          // The notifications table must exist with these columns and appropriate RLS.
+          const { error } = await supabase.from("notifications").insert({
+            user_id: userId,
+            title: messageTitle,
+            message: messageBody,
+            is_read: false
+          });
+
+          if (error) {
+            throw new Error("Personal notification could not be saved. The notifications table or its permissions may not be configured yet. Details: " + error.message);
+          }
+
+          showNotice(sendMessage, "Personal notification saved for the selected user.", true);
+          sendForm.reset();
+          updateKind();
+        }
+      } catch (error) {
+        showNotice(sendMessage, error.message || "Could not send message.");
+      } finally {
+        sendButton.disabled = false;
+        updateKind();
+      }
+    });
+
+    retryButton.addEventListener("click", checkAdmin);
+    document.getElementById("refreshButton").addEventListener("click", loadHistory);
+
+    await checkAdmin();
+  </script>
+</body>
+          </html>
+          
