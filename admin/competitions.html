@@ -1,0 +1,777 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b3d2e">
+  <title>Competition Management | Arewa Lyrics Hub</title>
+
+  <style>
+    :root {
+      --green: #0b3d2e;
+      --green2: #087348;
+      --gold: #d6b85a;
+      --bg: #f3f6f4;
+      --border: #dce6df;
+      --text: #193329;
+      --muted: #687970;
+      --red: #a12c20;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: var(--green);
+      color: white;
+      padding: 22px 16px;
+      border-bottom: 4px solid var(--gold);
+    }
+
+    header h1 { margin: 0 0 6px; font-size: 22px; }
+    header p { margin: 0; color: #d0e7da; }
+
+    main {
+      max-width: 1100px;
+      margin: auto;
+      padding: 20px 14px 40px;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+      min-width: 0;
+    }
+
+    h2 { font-size: 19px; margin: 0 0 14px; }
+    .muted { color: var(--muted); line-height: 1.55; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .number {
+      font-size: 25px;
+      font-weight: 800;
+      color: var(--green2);
+      overflow-wrap: anywhere;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 12px;
+    }
+
+    input, textarea, select {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 7px;
+      border: 1px solid #cbd8cf;
+      border-radius: 8px;
+      font: inherit;
+      background: white;
+      color: var(--text);
+    }
+
+    textarea {
+      min-height: 95px;
+      resize: vertical;
+    }
+
+    button, .link-button {
+      border: 0;
+      border-radius: 8px;
+      padding: 11px 14px;
+      background: var(--green2);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    button:disabled { opacity: .55; cursor: wait; }
+    .secondary { background: #e7eee9; color: var(--text); }
+    .danger { background: var(--red); }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .notice {
+      padding: 12px;
+      border-radius: 8px;
+      background: #fff5dc;
+      color: #704e00;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+      margin: 12px 0;
+    }
+
+    .error { background: #fff0ed; color: var(--red); }
+    .success { background: #e5f7ec; color: #17633a; }
+
+    .competition-card {
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 15px;
+      margin-top: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .competition-card h3 { margin: 0 0 8px; }
+    .competition-card p { line-height: 1.45; }
+    .tag {
+      display: inline-block;
+      background: #e7eee9;
+      border-radius: 20px;
+      padding: 5px 9px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .participant {
+      border-top: 1px solid var(--border);
+      padding: 10px 0;
+      overflow-wrap: anywhere;
+    }
+
+    [hidden] { display: none !important; }
+
+    @media (max-width: 480px) {
+      main { padding: 12px 10px 28px; }
+      .panel { padding: 14px; }
+      header { padding: 18px 14px; }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>AREWA LYRICS HUB</h1>
+  <p>Competition Administration</p>
+</header>
+
+<main>
+  <section id="loadingPanel" class="panel">
+    <h2>Checking administrator access...</h2>
+    <p class="muted">Please wait.</p>
+  </section>
+
+  <section id="loginPanel" class="panel" hidden>
+    <h2>Administrator Sign In</h2>
+    <p class="muted">
+      Sign in with your existing authorized Arewa Lyrics Hub account.
+    </p>
+
+    <form id="loginForm">
+      <label for="email">Email Address</label>
+      <input id="email" type="email" autocomplete="username" required>
+
+      <label for="password">Password</label>
+      <input id="password" type="password"
+        autocomplete="current-password" required>
+
+      <div class="actions">
+        <button id="loginButton" type="submit">Sign In</button>
+      </div>
+    </form>
+
+    <div id="loginMessage" class="notice" role="status" hidden></div>
+  </section>
+
+  <section id="deniedPanel" class="panel" hidden>
+    <h2>Access Denied</h2>
+    <p class="muted">
+      This account is not an active administrator.
+    </p>
+    <button id="deniedLogout" type="button">Sign Out</button>
+  </section>
+
+  <section id="app" hidden>
+    <section class="panel">
+      <div class="section-title">
+        <div>
+          <h2>Competition Overview</h2>
+          <p id="identity" class="muted"></p>
+        </div>
+        <span class="tag" id="roleTag">ADMIN</span>
+      </div>
+
+      <div class="grid">
+        <div class="stat">
+          <div id="totalCompetitions" class="number">—</div>
+          <div>Total Competitions</div>
+        </div>
+        <div class="stat">
+          <div id="publishedCompetitions" class="number">—</div>
+          <div>Published</div>
+        </div>
+        <div class="stat">
+          <div id="totalParticipants" class="number">—</div>
+          <div>Total Registrations</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="refreshButton" type="button">Refresh Data</button>
+        <button id="logoutButton" type="button" class="secondary">
+          Sign Out
+        </button>
+        <a href="./dashboard.html" class="link-button secondary">
+          Admin Dashboard
+        </a>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Create Competition</h2>
+      <p class="muted">
+        Create a draft first. Review the details, then publish it and open
+        registration when you are ready.
+      </p>
+
+      <form id="competitionForm">
+        <label for="title">Competition Name</label>
+        <input id="title" maxlength="150" required
+          placeholder="e.g. Arewa Lyrics Challenge">
+
+        <label for="description">Description and Rules</label>
+        <textarea id="description"
+          placeholder="Explain the rules and how winners will be selected."></textarea>
+
+        <label for="format">Competition Format</label>
+        <select id="format" required>
+          <option value="points">Points / League Table</option>
+          <option value="group_knockout">Group Stage + Knockout</option>
+        </select>
+
+        <label for="capacity">Maximum Participants</label>
+        <input id="capacity" type="number" min="1" max="10000"
+          step="1" value="16" required>
+
+        <label for="prize">Prize Description</label>
+        <textarea id="prize"
+          placeholder="Describe prizes, certificates or other rewards."></textarea>
+
+        <label for="deadline">Registration Deadline (optional)</label>
+        <input id="deadline" type="datetime-local">
+
+        <label for="startAt">Competition Start Date (optional)</label>
+        <input id="startAt" type="datetime-local">
+
+        <div class="actions">
+          <button id="createButton" type="submit">Create Draft</button>
+        </div>
+      </form>
+
+      <div id="createMessage" class="notice" role="status" hidden></div>
+    </section>
+
+    <section class="panel">
+      <div class="section-title">
+        <h2>Manage Competitions</h2>
+        <button id="loadButton" type="button" class="secondary">
+          Reload
+        </button>
+      </div>
+
+      <div id="listMessage" class="notice" role="status">
+        Loading competitions...
+      </div>
+      <div id="competitionList"></div>
+    </section>
+  </section>
+</main>
+
+<script type="module">
+  import { createClient } from
+    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+  const SUPABASE_URL =
+    "https://vyydpzgkpbefxdxplqla.supabase.co";
+
+  const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_rz2cvizCJOnS-qyBOiISsg_sQJk3wCB";
+
+  const $ = id => document.getElementById(id);
+
+  const loadingPanel = $("loadingPanel");
+  const loginPanel = $("loginPanel");
+  const deniedPanel = $("deniedPanel");
+  const app = $("app");
+
+  const supabase = createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
+
+  let currentUser = null;
+  let currentProfile = null;
+  let competitions = [];
+  let participantCounts = {};
+  let busy = false;
+
+  function showOnly(panel) {
+    [loadingPanel, loginPanel, deniedPanel, app].forEach(el => {
+      el.hidden = el !== panel;
+    });
+  }
+
+  function setMessage(id, text, kind = "") {
+    const el = $(id);
+    el.textContent = text;
+    el.className = "notice" + (kind ? " " + kind : "");
+    el.hidden = false;
+  }
+
+  function safe(value, fallback = "Not provided") {
+    return value == null || value === "" ? fallback : String(value);
+  }
+
+  function formatDate(value) {
+    if (!value) return "Not scheduled";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+      ? String(value)
+      : date.toLocaleString();
+  }
+
+  function toISODate(value) {
+    if (!value) return null;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date.toISOString();
+  }
+
+  async function verifyAdmin() {
+    showOnly(loadingPanel);
+
+    const { data: authData, error: authError } =
+      await supabase.auth.getUser();
+
+    if (authError || !authData.user) {
+      currentUser = null;
+      currentProfile = null;
+      showOnly(loginPanel);
+      return;
+    }
+
+    currentUser = authData.user;
+
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("id, full_name, display_name, email, role, status")
+      .eq("id", currentUser.id)
+      .maybeSingle();
+
+    if (error) {
+      showOnly(loginPanel);
+      setMessage(
+        "loginMessage",
+        "Could not verify your profile. " + error.message,
+        "error"
+      );
+      return;
+    }
+
+    if (
+      !profile ||
+      !["admin", "super_admin"].includes(profile.role) ||
+      profile.status !== "active"
+    ) {
+      currentProfile = null;
+      showOnly(deniedPanel);
+      return;
+    }
+
+    currentProfile = profile;
+
+    $("identity").textContent =
+      "Signed in as " +
+      safe(profile.display_name || profile.full_name || currentUser.email);
+
+    $("roleTag").textContent =
+      profile.role.replaceAll("_", " ").toUpperCase();
+
+    showOnly(app);
+    await loadCompetitions();
+  }
+
+  async function loadCompetitions() {
+    if (busy) return;
+    busy = true;
+    $("refreshButton").disabled = true;
+    $("loadButton").disabled = true;
+
+    setMessage("listMessage", "Loading competitions...");
+
+    try {
+      const { data, error } = await supabase
+        .from("competitions")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      competitions = data || [];
+      participantCounts = {};
+
+      if (competitions.length) {
+        const { data: participants, error: participantError } =
+          await supabase
+            .from("competition_participants")
+            .select("competition_id");
+
+        if (participantError) throw participantError;
+
+        for (const participant of participants || []) {
+          participantCounts[participant.competition_id] =
+            (participantCounts[participant.competition_id] || 0) + 1;
+        }
+      }
+
+      $("totalCompetitions").textContent = String(competitions.length);
+      $("publishedCompetitions").textContent = String(
+        competitions.filter(c =>
+          ["published", "ongoing"].includes(c.status)
+        ).length
+      );
+
+      $("totalParticipants").textContent = String(
+        Object.values(participantCounts)
+          .reduce((sum, count) => sum + count, 0)
+      );
+
+      renderCompetitions();
+    } catch (error) {
+      competitions = [];
+      $("competitionList").replaceChildren();
+      ["totalCompetitions", "publishedCompetitions", "totalParticipants"]
+        .forEach(id => $(id).textContent = "—");
+
+      setMessage(
+        "listMessage",
+        "Could not load competitions. " +
+        (error.message || "Check database permissions."),
+        "error"
+      );
+    } finally {
+      busy = false;
+      $("refreshButton").disabled = false;
+      $("loadButton").disabled = false;
+    }
+  }
+
+  function renderCompetitions() {
+    const list = $("competitionList");
+    list.replaceChildren();
+
+    if (!competitions.length) {
+      setMessage(
+        "listMessage",
+        "No competitions yet. Create your first draft above.",
+        "success"
+      );
+      return;
+    }
+
+    setMessage(
+      "listMessage",
+      "Showing " + competitions.length + " competition(s).",
+      "success"
+    );
+
+    for (const competition of competitions) {
+      const card = document.createElement("article");
+      card.className = "competition-card";
+
+      const title = document.createElement("h3");
+      title.textContent = competition.title;
+      card.appendChild(title);
+
+      const status = document.createElement("span");
+      status.className = "tag";
+      status.textContent = competition.status.toUpperCase();
+      card.appendChild(status);
+
+      const count = participantCounts[competition.id] || 0;
+
+      const details = [
+        "Format: " + (
+          competition.format === "points"
+            ? "Points / League Table"
+            : "Group Stage + Knockout"
+        ),
+        "Participants: " + count + " / " +
+          competition.max_participants,
+        "Registration: " +
+          (competition.registration_open ? "Open" : "Closed"),
+        "Deadline: " + formatDate(competition.registration_deadline),
+        "Start: " + formatDate(competition.start_at),
+        "Prize: " + safe(competition.prize_description)
+      ];
+
+      for (const detail of details) {
+        const p = document.createElement("p");
+        p.textContent = detail;
+        card.appendChild(p);
+      }
+
+      if (competition.description) {
+        const description = document.createElement("p");
+        description.className = "muted";
+        description.textContent = competition.description;
+        card.appendChild(description);
+      }
+
+      const actions = document.createElement("div");
+      actions.className = "actions";
+
+      if (competition.status === "draft") {
+        actions.appendChild(makeButton(
+          "Publish Competition",
+          () => updateCompetition(competition, {
+            status: "published",
+            registration_open: false
+          })
+        ));
+      }
+
+      if (
+        competition.status === "published" &&
+        !competition.registration_open
+      ) {
+        actions.appendChild(makeButton(
+          "Open Registration",
+          () => updateCompetition(competition, {
+            registration_open: true
+          })
+        ));
+      }
+
+      if (
+        competition.status === "published" &&
+        competition.registration_open
+      ) {
+        actions.appendChild(makeButton(
+          "Close Registration",
+          () => updateCompetition(competition, {
+            registration_open: false
+          }),
+          "secondary"
+        ));
+      }
+
+      if (
+        competition.status === "published" ||
+        competition.status === "draft"
+      ) {
+        actions.appendChild(makeButton(
+          "Edit Details",
+          () => editCompetition(competition),
+          "secondary"
+        ));
+      }
+
+      if (competition.status !== "completed" &&
+          competition.status !== "cancelled") {
+        actions.appendChild(makeButton(
+          "Cancel Competition",
+          () => updateCompetition(competition, {
+            status: "cancelled",
+            registration_open: false
+          }),
+          "danger"
+        ));
+      }
+
+      actions.appendChild(makeButton(
+        "View Participants",
+        () => viewParticipants(competition),
+        "secondary"
+      ));
+
+      card.appendChild(actions);
+      list.appendChild(card);
+    }
+  }
+
+  function makeButton(text, action, className = "") {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = text;
+    if (className) button.className = className;
+    button.addEventListener("click", action);
+    return button;
+  }
+
+  async function createCompetition(event) {
+    event.preventDefault();
+
+    if (!currentUser || !currentProfile) {
+      setMessage("createMessage", "Administrator session required.", "error");
+      return;
+    }
+
+    const title = $("title").value.trim();
+    const capacity = Number($("capacity").value);
+
+    if (!title || !Number.isInteger(capacity) || capacity < 1) {
+      setMessage(
+        "createMessage",
+        "Enter a valid competition name and participant limit.",
+        "error"
+      );
+      return;
+    }
+
+    const button = $("createButton");
+    button.disabled = true;
+
+    const payload = {
+      title,
+      description: $("description").value.trim() || null,
+      format: $("format").value,
+      max_participants: capacity,
+      prize_description: $("prize").value.trim() || null,
+      registration_deadline: toISODate($("deadline").value),
+      start_at: toISODate($("startAt").value),
+      status: "draft",
+      registration_open: false,
+      created_by: currentUser.id
+    };
+
+    try {
+      const { error } = await supabase
+        .from("competitions")
+        .insert(payload);
+
+      if (error) throw error;
+
+      $("competitionForm").reset();
+      $("capacity").value = "16";
+
+      setMessage(
+        "createMessage",
+        "Competition draft created successfully.",
+        "success"
+      );
+
+      await loadCompetitions();
+    } catch (error) {
+      setMessage(
+        "createMessage",
+        "Could not create competition. " +
+        (error.message || "Please try again."),
+        "error"
+      );
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  async function updateCompetition(competition, changes) {
+    if (!confirm(
+      "Are you sure you want to update this competition?"
+    )) return;
+
+    try {
+      const { error } = await supabase
+        .from("competitions")
+        .update({
+          ...changes,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", competition.id);
+
+      if (error) throw error;
+
+      setMessage("listMessage", "Competition updated.", "success");
+      await loadCompetitions();
+    } catch (error) {
+      setMessage(
+        "listMessage",
+        "Update failed: " + (error.message || "Please try again."),
+        "error"
+      );
+    }
+  }
+
+  async function editCompetition(competition) {
+    const title = prompt("Competition name:", competition.title);
+    if (title === null) return;
+
+    const description = prompt(
+      "Competition description and rules:",
+      competition.description || ""
+    );
+    if (description === null) return;
+
+    const prize = prompt(
+      "Prize description:",
+      competition.prize_description || ""
+    );
+    if (prize === null) return;
+
+    const max = prompt(
+      "Maximum participants:",
+      String(competition.max_participants)
+    );
+    if (max === null) return;
+
+    const capacity = Number(max.trim());
+
+    if (!title.trim() || !Number.isInteger(capacity) || capacity < 1) {
+      setMessage(
+        "listMessage",
+        "Enter a valid name and participant limit.",
+        "error"
+      );
+      return;
+    }
+
+    const currentCount = participantCounts[competition.id] || 0;
+
+    if (capacity < currentCount) {
+      setMessage(
+        "listMessage",
+        "The limit cannot be lower than the number of people already registered.",
+        "error"
+      );
+      return;
+    }
+
+    await updateCompetition(competition, {
+      title
