@@ -226,4 +226,368 @@ function makeButton(text, action, className = "") {
   button.className = "btn" + (className ? " " + className : "");
   button.addEventListener("click", action);
   return button;
+  }
   
+async function checkSession() {
+  const { data, error } = await supabase.auth.getSession();
+
+  if (error) throw error;
+
+  currentUser = data.session?.user || null;
+
+  if (!currentUser) {
+    setMessage(
+      "accountMessage",
+      "Ba a sami login session ba. Ka shiga account ta hanyar website ɗinka, sannan ka sake buɗe Competition.",
+      "error"
+    );
+    return false;
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, display_name, full_name, member_id, role, status")
+    .eq("id", currentUser.id)
+    .maybeSingle();
+
+  if (profileError) throw profileError;
+
+  if (!profile) {
+    setMessage(
+      "accountMessage",
+      "Ba a sami profile ɗin account ɗinka ba. Tuntuɓi admin.",
+      "error"
+    );
+    return false;
+  }
+
+  currentProfile = profile;
+
+  setMessage(
+    "accountMessage",
+    "An gane account ɗinka: " +
+      safe(profile.display_name, safe(profile.full_name, "Member")) +
+      ". Za ka iya duba gasanni.",
+    "success"
+  );
+
+  return true;
+}
+
+async function loadCompetitions() {
+  if (busy) return;
+  busy = true;
+  $("refreshButton").disabled = true;
+
+  setMessage("listMessage", "Ana loda competitions...");
+
+  try {
+    const { data, error } = await supabase
+      .from("competitions")
+      .select(
+        "id, title, description, format, max_participants, prize_description, status, registration_open, registration_deadline, start_at"
+      )
+      .in("status", ["published", "ongoing"])
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    competitions = data || [];
+    await loadParticipantCounts();
+    renderCompetitions();
+  } catch (error) {
+    setMessage(
+      "listMessage",
+      "An kasa loda gasanni: " +
+        (error.message || "Ka sake gwadawa."),
+      "error"
+    );
+  } finally {
+    busy = false;
+    $("refreshButton").disabled = false;
+  }
+}
+
+async function loadParticipantCounts() {
+  const counts = {};
+
+  for (const competition of competitions) {
+    const { count, error } = await supabase
+      .from("competition_participants")
+      .select("id", { count: "exact", head: true })
+      .eq("competition_id", competition.id);
+
+    if (error) {
+      console.error("Could not load participant count:", error.message);
+      counts[competition.id] = null;
+    } else {
+      counts[competition.id] = count ?? 0;
+    }
+  }
+
+  window.competitionParticipantCounts = counts;
+}
+
+function renderCompetitions() {
+  const list = $("competitionList");
+  list.replaceChildren();
+
+  if (!competitions.length) {
+    setMessage(
+      "listMessage",
+      "Babu competition da aka wallafa a yanzu."
+    );
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent =
+      "Sabbin competitions za su bayyana a nan bayan admin ya wallafa su.";
+    list.appendChild(empty);
+    return;
+  }
+
+  setMessage(
+    "listMessage",
+    "An samo competitions " + competitions.length + ".",
+    "success"
+  );
+
+  for (const competition of competitions) {
+    const card = document.createElement("article");
+    card.className = "competition-card";
+
+    const title = document.createElement("h3");
+    title.textContent = competition.title;
+    card.appendChild(title);
+
+    const status = document.createElement("span");
+    status.className = "tag";
+    status.textContent = competition.status.toUpperCase();
+    card.appendChild(status);
+
+    const details = [
+      "Tsari: " +
+        (competition.format === "points"
+          ? "Points / League Table"
+          : "Group Stage + Knockout"),
+      "Mahalarta: " +
+        (window.competitionParticipantCounts[competition.id] == null
+          ? "Ba a samu adadi ba"
+          : window.competitionParticipantCounts[competition.id]) +
+        " / " + competition.max_participants,
+      "Kyauta: " + safe(competition.prize_description),
+      "Ranar farawa: " + formatDate(competition.start_at),
+      "Ranar ƙarshe ta rajista: " +
+        formatDate(competition.registration_deadline)
+    ];
+
+    for (const detail of details) {
+      const p = document.createElement("p");
+      p.textContent = detail;
+      card.appendChild(p);
+    }
+
+    if (competition.description) {
+      const description = document.createElement("p");
+      description.className = "muted";
+      description.textContent = competition.description;
+      card.appendChild(description);
+    }
+
+    const actions = document.createElement("div");
+    actions.className = "card-actions";
+
+    const now = Date.now();
+    const deadlinePassed =
+      competition.registration_deadline &&
+      new Date(competition.registration_deadline).getTime() < now;
+
+    if (
+      competition.status === "published" &&
+      competition.registration_open &&
+      !deadlinePassed
+    ) {
+      actions.appendChild(
+        makeButton("🏆 Join Competition", () =>
+          joinCompetition(competition)
+        , "gold")
+      );
+    } else if (competition.status === "ongoing") {
+      const ongoing = document.createElement("p");
+      ongoing.className = "notice";
+      ongoing.textContent = "Wannan competition ta fara.";
+      actions.appendChild(ongoing);
+    } else {
+      const closed = document.createElement("p");
+      closed.className = "notice";
+      closed.textContent = "Ba a buɗe rajista ba ko kuma lokacin rajista ya ƙare.";
+      actions.appendChild(closed);
+    }
+
+    card.appendChild(actions);
+    list.appendChild(card);
+  }
+}
+
+async function joinCompetition(competition) {
+  if (!currentUser) {
+    setMessage(
+      "listMessage",
+      "Ba a sami session ba. Ka shiga account ɗinka sannan ka sake gwadawa.",
+      "error"
+    );
+    return;
+  }
+
+  const confirmed = confirm(
+    "Kana son yin rajista a competition ɗin: " +
+      competition.title + "?"
+  );
+
+  if (!confirmed) return;
+
+  const buttons = $("competitionList").querySelectorAll("button");
+  buttons.forEach(button => button.disabled = true);
+
+  try {
+    const { data, error } = await supabase.rpc("join_competition", {
+      p_competition_id: competition.id
+    });
+
+    if (error) throw error;
+
+    if (data && data.success === false) {
+      throw new Error(data.message || "Ba a kammala rajistar ba.");
+    }
+
+    setMessage(
+      "listMessage",
+      "An aika buƙatar rajistar ka. Ka duba sakamakon da aka dawo da shi kafin ka ɗauka cewa an kammala.",
+      "success"
+    );
+
+    await loadMyRegistrations();
+    await loadCompetitions();
+  } catch (error) {
+    setMessage(
+      "listMessage",
+      "Rajista ta gaza: " + (error.message || "Ka sake gwadawa."),
+      "error"
+    );
+  } finally {
+    buttons.forEach(button => button.disabled = false);
+  }
+}
+
+async function loadMyRegistrations() {
+  if (!currentUser) return;
+
+  const container = $("myRegistrations");
+  container.replaceChildren();
+
+  const { data, error } = await supabase
+    .from("competition_participants")
+    .select(
+      "participant_name, joined_at, competitions(title, status, start_at)"
+    )
+    .eq("user_id", currentUser.id)
+    .order("joined_at", { ascending: false });
+
+  if (error) {
+    setMessage(
+      "myRegistrationsMessage",
+      "Ba a iya loda rajistarka ba: " + error.message,
+      "error"
+    );
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    setMessage(
+      "myRegistrationsMessage",
+      "Ba ka yi rajista a wata competition ba tukuna."
+    );
+    return;
+  }
+
+  setMessage(
+    "myRegistrationsMessage",
+    "Yawan rajistarka: " + data.length,
+    "success"
+  );
+
+  for (const registration of data) {
+    const card = document.createElement("div");
+    card.className = "competition-card";
+    card.style.marginBottom = "10px";
+
+    const title = document.createElement("h3");
+    title.textContent =
+      registration.competitions?.title || "Competition";
+    card.appendChild(title);
+
+    const name = document.createElement("p");
+    name.textContent =
+      "Username: " + safe(registration.participant_name);
+    card.appendChild(name);
+
+    const joined = document.createElement("p");
+    joined.textContent =
+      "Ranar rajista: " + formatDate(registration.joined_at);
+    card.appendChild(joined);
+
+    const status = document.createElement("p");
+    status.textContent =
+      "Matsayi: " +
+      safe(registration.competitions?.status, "Ba a sani ba");
+    card.appendChild(status);
+
+    container.appendChild(card);
+  }
+}
+
+$("refreshButton").addEventListener("click", async () => {
+  await loadCompetitions();
+});
+
+async function initializePage() {
+  try {
+    const authenticated = await checkSession();
+
+    if (!authenticated) {
+      setMessage(
+        "myRegistrationsMessage",
+        "Shiga account ɗinka ta dashboard sannan ka dawo nan."
+      );
+      return;
+    }
+
+    await loadCompetitions();
+    await loadMyRegistrations();
+  } catch (error) {
+    setMessage(
+      "accountMessage",
+      "An samu matsala wajen duba account: " +
+        (error.message || "Ka sake gwadawa."),
+      "error"
+    );
+  }
+}
+
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === "SIGNED_OUT" || !session) {
+    currentUser = null;
+    currentProfile = null;
+
+    setMessage(
+      "accountMessage",
+      "Session ɗin account ɗinka ya ƙare. Ka shiga ta dashboard sannan ka dawo nan.",
+      "error"
+    );
+  }
+});
+
+initializePage();
+</script>
+</body>
+</html>
+
