@@ -772,6 +772,107 @@
       );
       return;
     }
-
+    
     await updateCompetition(competition, {
-      title
+      title: title.trim(),
+      description: description.trim() || null,
+      prize_description: prize.trim() || null,
+      max_participants: capacity
+    });
+  }
+
+  async function viewParticipants(competition) {
+    const { data, error } = await supabase
+      .from("competition_participants")
+      .select("participant_name, joined_at")
+      .eq("competition_id", competition.id)
+      .order("joined_at", { ascending: true });
+
+    if (error) {
+      setMessage(
+        "listMessage",
+        "Could not load participants: " + error.message,
+        "error"
+      );
+      return;
+    }
+
+    const names = (data || []).map((p, index) =>
+      (index + 1) + ". " +
+      safe(p.participant_name, "Username missing") +
+      " — " + formatDate(p.joined_at)
+    );
+
+    alert(
+      competition.title + "\n\n" +
+      (names.length ? names.join("\n") : "No participants yet.")
+    );
+  }
+
+  $("competitionForm").addEventListener("submit", createCompetition);
+
+  $("refreshButton").addEventListener("click", loadCompetitions);
+  $("loadButton").addEventListener("click", loadCompetitions);
+
+  $("loginForm").addEventListener("submit", async event => {
+    event.preventDefault();
+    $("loginButton").disabled = true;
+    $("loginMessage").hidden = true;
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: $("email").value.trim(),
+        password: $("password").value
+      });
+
+      if (error) throw error;
+      await verifyAdmin();
+    } catch (error) {
+      setMessage(
+        "loginMessage",
+        error.message || "Sign-in failed.",
+        "error"
+      );
+    } finally {
+      $("loginButton").disabled = false;
+    }
+  });
+
+  async function logout() {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      setMessage("loginMessage", error.message, "error");
+      return;
+    }
+
+    currentUser = null;
+    currentProfile = null;
+    competitions = [];
+    showOnly(loginPanel);
+  }
+
+  $("logoutButton").addEventListener("click", logout);
+  $("deniedLogout").addEventListener("click", logout);
+
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_OUT") {
+      currentUser = null;
+      currentProfile = null;
+      showOnly(loginPanel);
+    }
+  });
+
+  verifyAdmin().catch(error => {
+    showOnly(loginPanel);
+    setMessage(
+      "loginMessage",
+      "Could not initialize the page. " +
+      (error.message || "Please reload."),
+      "error"
+    );
+  });
+</script>
+</body>
+</html>
+
