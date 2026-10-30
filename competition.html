@@ -1,0 +1,1017 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#003d2e">
+  <meta name="description" content="Discover and join official Arewa Lyrics Hub competitions.">
+  <title>Competitions | Arewa Lyrics Hub</title>
+
+  <style>
+    :root {
+      --green: #004532;
+      --deep: #002f27;
+      --bright: #00bd70;
+      --gold: #d6b85a;
+      --text: #142b25;
+      --muted: #718078;
+      --line: #e0e8e3;
+      --white: #ffffff;
+      --surface: #f4f7f5;
+      --danger: #a12c20;
+      --success: #17633b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--surface);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    button { font: inherit; }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    [hidden] { display: none !important; }
+
+    .topbar {
+      background: var(--deep);
+      color: white;
+      padding: 16px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .brand span { color: var(--bright); }
+
+    .top-links {
+      display: flex;
+      gap: 18px;
+      font-size: 14px;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
+    .hero {
+      background: linear-gradient(120deg, #003b2e, #08764e);
+      color: white;
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+    }
+
+    .hero p {
+      margin: 0;
+      line-height: 1.7;
+      color: #e2f5eb;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 21px;
+    }
+
+    .notice {
+      padding: 13px;
+      border-radius: 9px;
+      background: #edf5ef;
+      color: #245347;
+      font-size: 14px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .notice.error {
+      background: #fff0ed;
+      color: var(--danger);
+    }
+
+    .notice.success {
+      background: #e2f8e9;
+      color: var(--success);
+    }
+
+    .muted { color: var(--muted); }
+
+    .competition-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .competition-card {
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 18px;
+      min-width: 0;
+      background: white;
+    }
+
+    .competition-card h3 {
+      margin: 0 0 10px;
+      font-size: 20px;
+      overflow-wrap: anywhere;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #e1f9eb;
+      color: #08713f;
+      padding: 6px 11px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .tag.ongoing {
+      background: #fff3d5;
+      color: #805900;
+    }
+
+    .competition-card p {
+      font-size: 14px;
+      line-height: 1.65;
+      overflow-wrap: anywhere;
+      margin: 8px 0;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 9px;
+      padding: 12px 16px;
+      background: #00895a;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-block;
+      text-align: center;
+    }
+
+    .btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .btn.secondary {
+      background: #edf2ef;
+      color: #263b32;
+    }
+
+    .btn.gold {
+      background: var(--gold);
+      color: #202a20;
+    }
+
+    .card-actions {
+      margin-top: 16px;
+    }
+
+    .card-actions .btn { width: 100%; }
+
+    .empty {
+      padding: 28px 14px;
+      text-align: center;
+      border: 1px dashed #cbd8ce;
+      border-radius: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+      grid-column: 1 / -1;
+    }
+
+    .registration-card {
+      margin-bottom: 12px;
+      background: #fbfdfb;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .loading {
+      opacity: .7;
+      pointer-events: none;
+    }
+
+    @media (max-width: 700px) {
+      .topbar {
+        padding: 14px;
+        align-items: flex-start;
+      }
+
+      .brand { font-size: 16px; }
+
+      .top-links {
+        gap: 10px;
+        font-size: 12px;
+      }
+
+      .competition-list {
+        grid-template-columns: 1fr;
+      }
+
+      main {
+        margin: 14px auto;
+        padding: 0 12px;
+      }
+
+      .hero { padding: 22px 18px; }
+
+      .hero h1 { font-size: 23px; }
+
+      .panel { padding: 15px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      AREWA <span>LYRICS HUB</span>
+    </a>
+
+    <nav class="top-links" aria-label="Main navigation">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="profile.html">My Profile</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>🏆 Arewa Lyrics Hub Competitions</h1>
+      <p>
+        Discover official competitions, showcase your creativity,
+        challenge other members, and compete for recognition and prizes.
+      </p>
+    </section>
+
+    <section class="panel">
+      <h2>Your Account</h2>
+      <div id="accountMessage" class="notice" role="status" aria-live="polite">
+        Checking your account...
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Available Competitions</h2>
+      <p class="muted">
+        Official competitions published by Arewa Lyrics Hub administrators.
+      </p>
+
+      <div id="listMessage" class="notice" role="status" aria-live="polite">
+        Loading competitions...
+      </div>
+
+      <div id="competitionList" class="competition-list"></div>
+
+      <button
+        id="refreshButton"
+        class="btn secondary"
+        type="button"
+        style="margin-top:16px"
+      >
+        Refresh Competitions
+      </button>
+    </section>
+
+    <section class="panel">
+      <h2>My Competition Registrations</h2>
+
+      <div id="myRegistrationsMessage" class="notice">
+        Your registrations will appear here.
+      </div>
+
+      <div id="myRegistrations" style="margin-top:12px"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { createClient } from
+      "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+    // Supabase project configuration
+    const SUPABASE_URL =
+      "https://vyydpzgkpbefxdxplqla.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_rz2cvizCJOnS-qyBOiISsg_sQJk3wCB";
+
+    const supabase = createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const $ = (id) => document.getElementById(id);
+
+    let currentUser = null;
+    let currentProfile = null;
+    let competitions = [];
+    let participantCounts = {};
+    let registeredCompetitionIds = new Set();
+
+    let loadingCompetitions = false;
+    let loadingRegistrations = false;
+    let joiningCompetition = false;
+
+    function setMessage(id, message, type = "") {
+      const element = $(id);
+
+      element.textContent = message;
+      element.className = "notice" + (type ? " " + type : "");
+    }
+
+    function safe(value, fallback = "Not provided") {
+      if (value === null || value === undefined || value === "") {
+        return fallback;
+      }
+
+      return String(value);
+    }
+
+    function formatDate(value) {
+      if (!value) return "Not specified";
+
+      const date = new Date(value);
+
+      if (Number.isNaN(date.getTime())) {
+        return "Invalid date";
+      }
+
+      return date.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      });
+    }
+
+    function normalizeStatus(value) {
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function isDeadlinePassed(value) {
+      if (!value) return false;
+
+      const deadline = new Date(value).getTime();
+
+      // Invalid deadlines are treated as closed for safety.
+      if (!Number.isFinite(deadline)) return true;
+
+      return deadline < Date.now();
+    }
+
+    function isDeadlineInvalid(value) {
+      if (!value) return false;
+
+      return !Number.isFinite(new Date(value).getTime());
+    }
+
+    function makeButton(label, action, className = "") {
+      const button = document.createElement("button");
+
+      button.type = "button";
+      button.textContent = label;
+      button.className = "btn" + (className ? " " + className : "");
+      button.addEventListener("click", action);
+
+      return button;
+    }
+
+    function createParagraph(text, className = "") {
+      const paragraph = document.createElement("p");
+
+      paragraph.textContent = text;
+
+      if (className) {
+        paragraph.className = className;
+      }
+
+      return paragraph;
+    }
+
+    async function checkSession() {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error) throw error;
+
+      currentUser = data.session?.user || null;
+
+      if (!currentUser) {
+        currentProfile = null;
+
+        setMessage(
+          "accountMessage",
+          "You are browsing as a visitor. Sign in through the website dashboard to register for competitions.",
+          "error"
+        );
+
+        return false;
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("id, display_name, full_name, member_id, role, status")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+      if (profileError) throw profileError;
+
+      if (!profile) {
+        currentProfile = null;
+
+        setMessage(
+          "accountMessage",
+          "Your account profile could not be found. Please contact an administrator.",
+          "error"
+        );
+
+        return false;
+      }
+
+      currentProfile = profile;
+
+      const username = safe(
+        profile.display_name,
+        safe(profile.full_name, "Member")
+      );
+
+      setMessage(
+        "accountMessage",
+        "Signed in as: " + username + ". Your existing account session is active.",
+        "success"
+      );
+
+      return true;
+    }
+
+    async function loadCompetitions() {
+      if (loadingCompetitions) return;
+
+      loadingCompetitions = true;
+      $("refreshButton").disabled = true;
+      $("competitionList").classList.add("loading");
+
+      setMessage("listMessage", "Loading available competitions...");
+
+      try {
+        const { data, error } = await supabase
+          .from("competitions")
+          .select(
+            "id, title, description, format, max_participants, prize_description, status, registration_open, registration_deadline, start_at"
+          )
+          .in("status", ["published", "ongoing"])
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        competitions = data || [];
+
+        await loadParticipantCounts();
+
+        renderCompetitions();
+
+      } catch (error) {
+        console.error("Competition loading error:", error);
+
+        setMessage(
+          "listMessage",
+          "Unable to load competitions: " +
+            safe(error.message, "Please try again."),
+          "error"
+        );
+
+      } finally {
+        loadingCompetitions = false;
+        $("refreshButton").disabled = false;
+        $("competitionList").classList.remove("loading");
+      }
+    }
+
+    async function loadParticipantCounts() {
+      const counts = {};
+
+      for (const competition of competitions) {
+        const { count, error } = await supabase
+          .from("competition_participants")
+          .select("id", {
+            count: "exact",
+            head: true
+          })
+          .eq("competition_id", competition.id);
+
+        if (error) {
+          console.error(
+            "Participant count error:",
+            competition.id,
+            error.message
+          );
+
+          counts[competition.id] = null;
+        } else {
+          counts[competition.id] = count ?? 0;
+        }
+      }
+
+      participantCounts = counts;
+    }
+
+    function getRegistrationState(competition) {
+      const status = normalizeStatus(competition.status);
+
+      if (status !== "published") {
+        return {
+          canJoin: false,
+          message: "This competition is currently in progress."
+        };
+      }
+
+      if (competition.registration_open !== true) {
+        return {
+          canJoin: false,
+          message: "Registration is currently closed by the administrator."
+        };
+      }
+
+      if (isDeadlineInvalid(competition.registration_deadline)) {
+        return {
+          canJoin: false,
+          message: "The registration deadline is invalid. Please contact an administrator."
+        };
+      }
+
+      if (isDeadlinePassed(competition.registration_deadline)) {
+        return {
+          canJoin: false,
+          message: "The registration deadline has passed."
+        };
+      }
+
+      const count = participantCounts[competition.id];
+
+      if (
+        count !== null &&
+        count !== undefined &&
+        Number(competition.max_participants) > 0 &&
+        count >= Number(competition.max_participants)
+      ) {
+        return {
+          canJoin: false,
+          message: "This competition has reached its participant limit."
+        };
+      }
+
+      if (!currentUser) {
+        return {
+          canJoin: false,
+          message: "Sign in to your account to join this competition."
+        };
+      }
+
+      if (registeredCompetitionIds.has(competition.id)) {
+        return {
+          canJoin: false,
+          message: "You are already registered for this competition."
+        };
+      }
+
+      return {
+        canJoin: true,
+        message: "Registration is open."
+      };
+    }
+
+    function renderCompetitions() {
+      const list = $("competitionList");
+
+      list.replaceChildren();
+
+      if (!competitions.length) {
+        setMessage(
+          "listMessage",
+          "There are currently no published competitions."
+        );
+
+        const empty = document.createElement("div");
+
+        empty.className = "empty";
+        empty.textContent =
+          "New competitions will appear here when administrators publish them.";
+
+        list.appendChild(empty);
+
+        return;
+      }
+
+      setMessage(
+        "listMessage",
+        "Found " + competitions.length + " competition(s).",
+        "success"
+      );
+
+      for (const competition of competitions) {
+        const card = document.createElement("article");
+
+        card.className = "competition-card";
+
+        const title = document.createElement("h3");
+
+        title.textContent = safe(competition.title, "Untitled Competition");
+
+        card.appendChild(title);
+
+        const status = document.createElement("span");
+
+        const normalizedStatus = normalizeStatus(competition.status);
+
+        status.className =
+          "tag" + (normalizedStatus === "ongoing" ? " ongoing" : "");
+
+        status.textContent = safe(competition.status).toUpperCase();
+
+        card.appendChild(status);
+
+        const count = participantCounts[competition.id];
+
+        const capacity =
+          Number(competition.max_participants) > 0
+            ? Number(competition.max_participants)
+            : "Unlimited";
+
+        const participantText =
+          count === null || count === undefined
+            ? "Unavailable"
+            : String(count);
+
+        const formatText =
+          competition.format === "points"
+            ? "Points / League Table"
+            : competition.format === "group_knockout"
+              ? "Group Stage + Knockout"
+              : safe(competition.format);
+
+        const details = [
+          "Format: " + formatText,
+          "Participants: " + participantText + " / " + capacity,
+          "Prize: " + safe(competition.prize_description),
+          "Start date: " + formatDate(competition.start_at),
+          "Registration deadline: " +
+            formatDate(competition.registration_deadline)
+        ];
+
+        for (const detail of details) {
+          card.appendChild(createParagraph(detail));
+        }
+
+        if (competition.description) {
+          card.appendChild(
+            createParagraph(competition.description, "muted")
+          );
+        }
+
+        const actions = document.createElement("div");
+
+        actions.className = "card-actions";
+
+        const registration = getRegistrationState(competition);
+
+        if (registration.canJoin) {
+          actions.appendChild(
+            makeButton(
+              "🏆 Join Competition",
+              () => joinCompetition(competition),
+              "gold"
+            )
+          );
+        } else {
+          const notice = document.createElement("div");
+
+          notice.className = "notice";
+          notice.textContent = registration.message;
+
+          actions.appendChild(notice);
+        }
+
+        card.appendChild(actions);
+        list.appendChild(card);
+      }
+    }
+
+    async function loadMyRegistrations() {
+      if (!currentUser) {
+        registeredCompetitionIds = new Set();
+
+        setMessage(
+          "myRegistrationsMessage",
+          "Sign in to view your competition registrations."
+        );
+
+        $("myRegistrations").replaceChildren();
+
+        return;
+      }
+
+      if (loadingRegistrations) return;
+
+      loadingRegistrations = true;
+
+      const container = $("myRegistrations");
+
+      container.replaceChildren();
+
+      setMessage(
+        "myRegistrationsMessage",
+        "Loading your registrations..."
+      );
+
+      try {
+        const { data, error } = await supabase
+          .from("competition_participants")
+          .select(
+            "competition_id, participant_name, joined_at, competitions(title, status, start_at)"
+          )
+          .eq("user_id", currentUser.id)
+          .order("joined_at", { ascending: false });
+
+        if (error) throw error;
+
+        const registrations = data || [];
+
+        registeredCompetitionIds = new Set(
+          registrations.map(item => item.competition_id)
+        );
+
+        if (registrations.length === 0) {
+          setMessage(
+            "myRegistrationsMessage",
+            "You have not registered for any competition yet."
+          );
+
+          return;
+        }
+
+        setMessage(
+          "myRegistrationsMessage",
+          "Your total registrations: " + registrations.length,
+          "success"
+        );
+
+        for (const registration of registrations) {
+          const card = document.createElement("article");
+
+          card.className = "competition-card registration-card";
+
+          const competitionData = Array.isArray(registration.competitions)
+            ? registration.competitions[0]
+            : registration.competitions;
+
+          const title = document.createElement("h3");
+
+          title.textContent = safe(
+            competitionData?.title,
+            "Competition"
+          );
+
+          card.appendChild(title);
+
+          card.appendChild(
+            createParagraph(
+              "Username: " + safe(registration.participant_name)
+            )
+          );
+
+          card.appendChild(
+            createParagraph(
+              "Registration date: " + formatDate(registration.joined_at)
+            )
+          );
+
+          card.appendChild(
+            createParagraph(
+              "Competition status: " +
+                safe(competitionData?.status, "Unknown")
+            )
+          );
+
+          container.appendChild(card);
+        }
+
+      } catch (error) {
+        console.error("Registration loading error:", error);
+
+        setMessage(
+          "myRegistrationsMessage",
+          "Unable to load your registrations: " +
+            safe(error.message),
+          "error"
+        );
+
+      } finally {
+        loadingRegistrations = false;
+      }
+    }
+
+    async function joinCompetition(competition) {
+      if (joiningCompetition) return;
+
+      if (!currentUser) {
+        setMessage(
+          "listMessage",
+          "Please sign in through your website dashboard before registering.",
+          "error"
+        );
+
+        return;
+      }
+
+      // Refresh the registration state before submitting.
+      await loadMyRegistrations();
+
+      const registration = getRegistrationState(competition);
+
+      if (!registration.canJoin) {
+        renderCompetitions();
+
+        setMessage(
+          "listMessage",
+          registration.message,
+          "error"
+        );
+
+        return;
+      }
+
+      const confirmed = window.confirm(
+        "Do you want to register for \"" +
+          competition.title +
+          "\" using your existing account?"
+      );
+
+      if (!confirmed) return;
+
+      joiningCompetition = true;
+
+      const buttons = $("competitionList").querySelectorAll("button");
+
+      buttons.forEach(button => {
+        button.disabled = true;
+      });
+
+      try {
+        // The database RPC is the final authority.
+        const { data, error } = await supabase.rpc(
+          "join_competition",
+          {
+            p_competition_id: competition.id
+          }
+        );
+
+        if (error) throw error;
+
+        if (
+          data &&
+          typeof data === "object" &&
+          data.success === false
+        ) {
+          throw new Error(
+            data.message || "The registration request was rejected."
+          );
+        }
+
+        // Confirm that the current user actually has a registration row.
+        const { data: verification, error: verificationError } =
+          await supabase
+            .from("competition_participants")
+            .select("id, competition_id")
+            .eq("competition_id", competition.id)
+            .eq("user_id", currentUser.id)
+            .maybeSingle();
+
+        if (verificationError) throw verificationError;
+
+        if (!verification) {
+          throw new Error(
+            "The registration could not be verified. Please refresh and check again before retrying."
+          );
+        }
+
+        setMessage(
+          "listMessage",
+          "Registration confirmed. You have successfully joined this competition.",
+          "success"
+        );
+
+        await loadMyRegistrations();
+
+        await loadCompetitions();
+
+      } catch (error) {
+        console.error("Competition registration error:", error);
+
+        setMessage(
+          "listMessage",
+          "Registration failed: " +
+            safe(error.message, "Please try again."),
+          "error"
+        );
+
+      } finally {
+        joiningCompetition = false;
+
+        await loadMyRegistrations();
+
+        buttons.forEach(button => {
+          button.disabled = false;
+        });
+
+        renderCompetitions();
+      }
+    }
+
+    $("refreshButton").addEventListener("click", async () => {
+      await loadCompetitions();
+      await loadMyRegistrations();
+    });
+
+    // Keep the existing authentication session in sync.
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        currentUser = null;
+        currentProfile = null;
+        registeredCompetitionIds = new Set();
+
+        setMessage(
+          "accountMessage",
+          "Your session has ended. Sign in through your dashboard to register.",
+          "error"
+        );
+
+        loadMyRegistrations();
+        renderCompetitions();
+      }
+    });
+
+    async function initializePage() {
+      try {
+        await checkSession();
+
+        await loadMyRegistrations();
+
+        await loadCompetitions();
+
+      } catch (error) {
+        console.error("Page initialization error:", error);
+
+        setMessage(
+          "accountMessage",
+          "Unable to initialize your account: " +
+            safe(error.message, "Please refresh the page."),
+          "error"
+        );
+
+        setMessage(
+          "listMessage",
+          "The page could not load all competition information. Please refresh.",
+          "error"
+        );
+      }
+    }
+
+    initializePage();
+  </script>
+</body>
+</html>
