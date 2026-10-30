@@ -345,6 +345,60 @@
     .notice .button { margin: 5px; }
 
     .hidden { display: none !important; }
+    /* Live Competitions */
+.competition-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 15px;
+}
+
+.competition-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 17px;
+  box-shadow: var(--shadow);
+}
+
+.competition-card h3 {
+  margin: 0 0 9px;
+  font-size: 15px;
+}
+
+.competition-card p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.competition-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.competition-meta span {
+  background: #eaf3ed;
+  color: var(--green);
+  padding: 6px 9px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.competition-card .button {
+  margin-top: 8px;
+}
+
+.competition-message {
+  background: #f4f7f5;
+  border-radius: 10px;
+  padding: 13px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
 
     @media (max-width: 1050px) {
       .sidebar { width: 215px; }
