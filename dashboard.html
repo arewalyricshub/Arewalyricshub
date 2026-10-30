@@ -699,7 +699,184 @@
     function safeText(value, fallback = "Not added") {
       return value && String(value).trim() ? String(value) : fallback;
     }
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[char]));
+}
 
+async function loadMemberCompetitions() {
+  const container = $("memberCompetitionList");
+
+  try {
+    const { data: sessionData, error: sessionError } =
+      await supabaseClient.auth.getSession();
+
+    if (sessionError) throw sessionError;
+
+    const user = sessionData.session?.user;
+
+    if (!user) {
+      container.innerHTML =
+        '<div class="competition-message">Please sign in to view competitions.</div>';
+      return;
+    }
+
+    const { data: competitions, error } = await supabaseClient
+      .from("competitions")
+      .select("id, title, description, format, max_participants, prize_description, status, registration_open, registration_deadline, start_at")
+      .in("status", ["published", "ongoing"])
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    if (!competitions || competitions.length === 0) {
+      container.innerHTML =
+        '<div class="competition-message">There are currently no published competitions. Please check again later.</div>';
+      return;
+    }
+
+    const { data: participants, error: participantsError } =
+      await supabaseClient
+        .from("competition_participants")
+        .select("competition_id, user_id");
+
+    if (participantsError) throw participantsError;
+
+    const allParticipants = participants || [];
+
+    container.innerHTML = "";
+
+    competitions.forEach((competition) => {
+      const competitionParticipants = allParticipants.filter(
+        (participant) => participant.competition_id === competition.id
+      );
+
+      const participantCount = competitionParticipants.length;
+
+      const alreadyJoined = competitionParticipants.some(
+        (participant) => participant.user_id === user.id
+      );
+
+      const deadline = competition.registration_deadline
+        ? new Date(competition.registration_deadline)
+        : null;
+
+      const deadlinePassed =
+        deadline && (
+          Number.isNaN(deadline.getTime()) ||
+          deadline.getTime() < Date.now()
+        );
+
+      const isFull =
+        competition.max_participants !== null &&
+        participantCount >= competition.max_participants;
+
+      let message = "";
+      let button = "";
+
+      if (alreadyJoined) {
+        message = "You are already registered for this competition.";
+      } else if (competition.status !== "published") {
+        message = "Registration is available only for published competitions.";
+      } else if (!competition.registration_open) {
+        message = "Registration is currently closed.";
+      } else if (deadlinePassed) {
+        message = "The registration deadline has passed.";
+      } else if (isFull) {
+        message = "This competition has reached its participant limit.";
+      } else {
+        button = `
+          <button
+            class="button button-green"
+            type="button"
+            data-join-competition="${escapeHTML(competition.id)}"
+          >
+            Join Competition
+          </button>
+        `;
+      }
+
+      const deadlineText = deadline && !Number.isNaN(deadline.getTime())
+        ? deadline.toLocaleString()
+        : "Not specified";
+
+      const capacityText = competition.max_participants
+        ? `${participantCount}/${competition.max_participants} participants`
+        : `${participantCount} participants`;
+
+      const card = document.createElement("article");
+      card.className = "competition-card";
+
+      card.innerHTML = `
+        <h3>${escapeHTML(competition.title)}</h3>
+        <p>${escapeHTML(competition.description || "Join this Arewa Lyrics Hub competition.")}</p>
+
+        <div class="competition-meta">
+          <span>${escapeHTML(competition.status)}</span>
+          <span>${escapeHTML(capacityText)}</span>
+        </div>
+
+        <p><strong>Prize:</strong> ${escapeHTML(competition.prize_description || "See competition details")}</p>
+        <p><strong>Registration deadline:</strong> ${escapeHTML(deadlineText)}</p>
+
+        ${message ? `<div class="competition-message">${escapeHTML(message)}</div>` : ""}
+        ${button}
+      `;
+
+      container.appendChild(card);
+    });
+
+    container.querySelectorAll("[data-join-competition]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const competitionId = button.dataset.joinCompetition;
+
+        button.disabled = true;
+        button.textContent = "Joining...";
+
+        try {
+          const { data, error } = await supabaseClient.rpc(
+            "join_competition",
+            { p_competition_id: competitionId }
+          );
+
+          if (error) throw error;
+
+          await loadMemberCompetitions();
+
+          alert("Your registration request was processed successfully.");
+
+        } catch (error) {
+          console.error("Competition registration error:", error);
+
+          alert(
+            "Registration failed: " +
+            (error.message || "Please try again.")
+          );
+
+          button.disabled = false;
+          button.textContent = "Join Competition";
+        }
+      });
+    });
+
+  } catch (error) {
+    console.error("Member competitions error:", error);
+
+    container.innerHTML = `
+      <div class="competition-message">
+        Unable to load competitions from Supabase.
+        Please refresh the page or contact support.
+        <br><br>
+        Details: ${escapeHTML(error.message || "Unknown error")}
+      </div>
+    `;
+  }
+    }
     async function loadDashboard() {
       $("year").textContent = new Date().getFullYear();
 
