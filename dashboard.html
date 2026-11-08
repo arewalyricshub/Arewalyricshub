@@ -846,9 +846,23 @@ async function loadMemberCompetitions() {
 
           if (error) throw error;
 
-          await loadMemberCompetitions();
+          const { data: registration, error: verifyError } =
+  await supabaseClient
+    .from("competition_participants")
+    .select("id")
+    .eq("competition_id", competitionId)
+    .eq("user_id", user.id)
+    .maybeSingle();
 
-          alert("Your registration request was processed successfully.");
+if (verifyError) throw verifyError;
+
+if (!registration) {
+  throw new Error("Registration could not be verified. Please contact support.");
+}
+
+await loadMemberCompetitions();
+
+alert("Your competition registration has been confirmed.");
 
         } catch (error) {
           console.error("Competition registration error:", error);
