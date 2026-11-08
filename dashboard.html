@@ -983,7 +983,9 @@ alert("Your competition registration has been confirmed.");
         $("location").textContent = safeText(location);
 
         $("loading").classList.add("hidden");
-        $("app").classList.remove("hidden");
+$("app").classList.remove("hidden");
+
+await loadMemberCompetitions();
 
       } catch (error) {
         console.error("Dashboard error:", error);
