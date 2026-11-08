@@ -1,0 +1,831 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#063b2c">
+<title>Super Admin | Arewa Lyrics Hub</title>
+
+<style>
+:root {
+  --green:#063b2c;
+  --green2:#087348;
+  --gold:#e7bd43;
+  --bg:#f4f7f5;
+  --white:#fff;
+  --text:#193329;
+  --muted:#718078;
+  --border:#e4ebe6;
+  --red:#b42318;
+  --shadow:0 4px 18px rgba(10,45,30,.055);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Arial,sans-serif;
+  font-size:14px;
+}
+button,input,select{font:inherit}
+button,a{cursor:pointer}
+a{text-decoration:none}
+[hidden]{display:none!important}
+
+.topbar{
+  background:var(--green);
+  color:white;
+  padding:17px 22px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+.brand h1{font-size:18px;margin:0 0 4px;letter-spacing:.4px}
+.brand p{font-size:12px;color:#c9dfd2;margin:0}
+.top-right{display:flex;align-items:center;gap:10px}
+.role-pill{
+  background:rgba(255,255,255,.13);
+  border:1px solid rgba(255,255,255,.2);
+  color:#fff;
+  padding:7px 11px;
+  border-radius:30px;
+  font-size:11px;
+  font-weight:bold;
+}
+.logout-top{
+  border:1px solid rgba(255,255,255,.3);
+  background:transparent;
+  color:white;
+  padding:8px 12px;
+  border-radius:8px;
+  font-size:12px;
+}
+
+.layout{
+  max-width:1250px;
+  margin:auto;
+  padding:22px 18px 45px;
+}
+.welcome{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:18px;
+}
+.welcome h2{font-size:20px;margin:0 0 5px}
+.welcome p{color:var(--muted);font-size:12px;margin:0}
+.live{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  color:var(--green2);
+  font-size:11px;
+  font-weight:bold;
+}
+.live-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#19a463;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+  margin-bottom:18px;
+}
+.stat{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:15px;
+  box-shadow:var(--shadow);
+}
+.stat-label{font-size:11px;color:var(--muted);margin-bottom:9px}
+.stat-number{font-size:25px;font-weight:800;color:var(--green)}
+.stat-note{font-size:10px;color:var(--muted);margin-top:5px}
+
+.panel{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:13px;
+  padding:17px;
+  margin-bottom:17px;
+  box-shadow:var(--shadow);
+}
+.panel-heading{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:13px;
+}
+.panel-heading h3{font-size:15px;margin:0}
+.muted{color:var(--muted);line-height:1.5;font-size:12px}
+.toolbar{
+  display:flex;
+  gap:9px;
+  flex-wrap:wrap;
+  margin-bottom:13px;
+}
+.toolbar input{flex:1;min-width:180px}
+input,select{
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:#fff;
+  color:var(--text);
+  padding:10px 11px;
+  outline:none;
+  font-size:12px;
+}
+input:focus,select:focus{border-color:var(--green2)}
+
+.btn{
+  border:0;
+  border-radius:7px;
+  padding:9px 12px;
+  background:var(--green2);
+  color:white;
+  font-size:11px;
+  font-weight:bold;
+}
+.btn-light{background:#edf3ef;color:var(--green)}
+.btn-danger{background:#fff0ed;color:var(--red)}
+.btn:disabled{opacity:.5;cursor:wait}
+
+.member-list{display:flex;flex-direction:column;gap:8px}
+.member-row{
+  display:grid;
+  grid-template-columns:minmax(160px,1.3fr) minmax(100px,.8fr) minmax(120px,1fr) 90px auto;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#fff;
+}
+.member-name{font-weight:bold;font-size:12px;overflow-wrap:anywhere}
+.member-email,.member-id{font-size:11px;color:var(--muted);margin-top:4px;overflow-wrap:anywhere}
+.member-label{font-size:9px;color:#8a978f;margin-bottom:4px}
+.status{
+  display:inline-block;
+  padding:5px 8px;
+  border-radius:20px;
+  font-size:10px;
+  font-weight:bold;
+  text-transform:capitalize;
+}
+.status-active{background:#e7f7ed;color:#187443}
+.status-pending{background:#fff5dc;color:#936500}
+.status-rejected{background:#fff0ed;color:#b42318}
+.member-actions{display:flex;gap:5px;flex-wrap:wrap}
+
+.empty{
+  padding:25px 12px;
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  background:#fafcfb;
+  border:1px dashed var(--border);
+  border-radius:9px;
+}
+.notice{
+  padding:11px 12px;
+  border-radius:8px;
+  background:#fff5dc;
+  color:#765600;
+  font-size:12px;
+  line-height:1.5;
+  margin-bottom:12px;
+  overflow-wrap:anywhere;
+}
+.notice.error{background:#fff0ed;color:#a12c20}
+.notice.success{background:#e7f7ed;color:#17633a}
+
+.modules{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+}
+.module{
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:13px;
+  background:#fff;
+}
+.module h4{font-size:12px;margin:0 0 7px}
+.module p{font-size:11px;color:var(--muted);line-height:1.45;margin:0 0 11px}
+.module-link{
+  display:inline-block;
+  background:#edf4ef;
+  color:var(--green);
+  padding:7px 10px;
+  border-radius:7px;
+  font-size:10px;
+  font-weight:bold;
+}
+.module-link:hover{background:#dcebe1}
+
+.footer{
+  text-align:center;
+  color:var(--muted);
+  font-size:10px;
+  padding:12px;
+}
+
+@media(max-width:850px){
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .modules{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .member-row{
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .member-actions{grid-column:1/-1}
+}
+@media(max-width:520px){
+  .topbar{padding:14px}
+  .brand h1{font-size:15px}
+  .brand p{font-size:10px}
+  .layout{padding:16px 11px 30px}
+  .welcome h2{font-size:17px}
+  .stat{padding:12px}
+  .stat-number{font-size:22px}
+  .panel{padding:13px}
+  .modules{grid-template-columns:1fr 1fr}
+  .member-row{grid-template-columns:1fr 1fr;padding:10px}
+  .member-row .member-main{grid-column:1/-1}
+}
+@media(max-width:350px){
+  .modules{grid-template-columns:1fr}
+  .role-pill{display:none}
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <h1>AREWA LYRICS HUB</h1>
+    <p>Administration Control Center</p>
+  </div>
+
+  <div class="top-right">
+    <span class="role-pill" id="roleTag">SUPER ADMIN</span>
+    <button class="logout-top" id="logoutButton">Sign Out</button>
+  </div>
+</header>
+
+<main class="layout">
+
+  <section id="sessionRequired" class="panel" hidden>
+    <h3>Login Required</h3>
+    <p class="muted">
+      Please sign in through the main Arewa Lyrics Hub website.
+    </p>
+    <a class="btn" href="../login.html">Go to Main Login</a>
+  </section>
+
+  <section id="denied" class="panel" hidden>
+    <h3>Access Denied</h3>
+    <p class="muted" id="deniedMessage">
+      Your account does not have an active administrator role.
+    </p>
+    <button class="btn btn-light" id="deniedLogout">Sign Out</button>
+  </section>
+
+  <section id="app" hidden>
+
+    <div class="welcome">
+      <div>
+        <h2>Dashboard Overview</h2>
+        <p id="identity">Welcome, Administrator</p>
+      </div>
+      <div class="live">
+        <span class="live-dot"></span>
+        SYSTEM CONNECTED
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">TOTAL PROFILES</div>
+        <div class="stat-number" id="totalCount">—</div>
+        <div class="stat-note">Registered accounts</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">PENDING APPLICATIONS</div>
+        <div class="stat-number" id="pendingCount">—</div>
+        <div class="stat-note">Awaiting review</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">ACTIVE PROFILES</div>
+        <div class="stat-number" id="activeCount">—</div>
+        <div class="stat-note">Approved accounts</div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">REJECTED APPLICATIONS</div>
+        <div class="stat-number" id="rejectedCount">—</div>
+        <div class="stat-note">Rejected accounts</div>
+      </div>
+    </div>
+
+    <section class="panel" id="members">
+      <div class="panel-heading">
+        <div>
+          <h3>Member Management</h3>
+          <div class="muted">Review and manage registered members.</div>
+        </div>
+        <button class="btn btn-light" id="refreshButton">
+          ↻ Refresh
+        </button>
+      </div>
+
+      <div class="toolbar">
+        <input
+          id="search"
+          type="search"
+          placeholder="Search name, email or Member ID..."
+        >
+
+        <select id="statusFilter">
+          <option value="all">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="active">Active</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+
+      <div id="message" class="notice">Loading members...</div>
+      <div id="memberList" class="member-list"></div>
+    </section>
+
+    <section class="panel" id="modules">
+      <div class="panel-heading">
+        <div>
+          <h3>Administration Modules</h3>
+          <div class="muted">Access your platform management tools.</div>
+        </div>
+      </div>
+
+      <div class="modules">
+
+        <div class="module">
+          <h4>Artists & Agreements</h4>
+          <p>Artist applications, verification, agreements and releases.</p>
+          <a class="module-link" href="./artists.html">Open Module →</a>
+        </div>
+
+        <div class="module">
+          <h4>Announcements</h4>
+          <p>Create, edit and publish platform announcements.</p>
+          <a class="module-link" href="./announcements.html">Open Module →</a>
+        </div>
+
+        <div class="module">
+          <h4>Notifications</h4>
+          <p>Send notifications to members and user groups.</p>
+          <a class="module-link" href="./notifications.html">Open Module →</a>
+        </div>
+
+        <div class="module">
+          <h4>Competitions</h4>
+          <p>Manage contests, participants, deadlines and results.</p>
+          <a class="module-link" href="./competitions.html">Open Module →</a>
+        </div>
+
+        <div class="module">
+          <h4>Admin Permissions</h4>
+          <p>Manage administrators, moderators and permissions.</p>
+          <a class="module-link" href="./permissions.html">Open Module →</a>
+        </div>
+
+        <div class="module">
+          <h4>Settings & Activity Logs</h4>
+          <p>Platform configuration and administrative records.</p>
+          <a class="module-link" href="./settings.html">Open Module →</a>
+        </div>
+
+      </div>
+    </section>
+
+  </section>
+
+  <div class="footer">
+    Arewa Lyrics Hub · Administration Control Center
+  </div>
+
+</main>
+
+<script type="module">
+
+import { createClient } from
+"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const SUPABASE_URL =
+"https://vyydpzgkpbefxdxplqla.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+"sb_publishable_rz2cvizCJOnS-qyBOiISsg_sQJk3wCB";
+
+const supabase = createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
+const $ = id => document.getElementById(id);
+
+const sessionRequired = $("sessionRequired");
+const denied = $("denied");
+const app = $("app");
+
+let currentProfile = null;
+let profiles = [];
+let busy = false;
+
+function showOnly(section) {
+  [sessionRequired, denied, app].forEach(el => {
+    el.hidden = el !== section;
+  });
+}
+
+function message(text, kind = "") {
+  const el = $("message");
+  el.textContent = text;
+  el.className = "notice" + (kind ? " " + kind : "");
+}
+
+function safe(value) {
+  return value == null || value === ""
+    ? "Not provided"
+    : String(value);
+}
+
+function statusClass(status) {
+  if (status === "active") return "status-active";
+  if (status === "pending") return "status-pending";
+  if (status === "rejected") return "status-rejected";
+  return "";
+}
+
+// VERIFY THE EXISTING MAIN WEBSITE SESSION
+async function verifyAdmin() {
+
+  const { data: sessionData, error: sessionError } =
+    await supabase.auth.getSession();
+
+  if (sessionError || !sessionData.session) {
+    currentProfile = null;
+    showOnly(sessionRequired);
+    return;
+  }
+
+  const { data, error } = await supabase.auth.getUser();
+
+  if (error || !data.user) {
+    showOnly(sessionRequired);
+    return;
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, full_name, email, role, status")
+    .eq("id", data.user.id)
+    .maybeSingle();
+
+  if (profileError) {
+    $("deniedMessage").textContent =
+      "Unable to verify your account. Check your profile access policy.";
+    showOnly(denied);
+    return;
+  }
+
+  if (
+    !profile ||
+    !["admin", "super_admin"].includes(profile.role) ||
+    profile.status !== "active"
+  ) {
+    currentProfile = null;
+    $("deniedMessage").textContent =
+      "Your account is not an active authorized administrator.";
+    showOnly(denied);
+    return;
+  }
+
+  currentProfile = profile;
+
+  $("identity").textContent =
+    "Welcome back, " + safe(profile.full_name || data.user.email);
+
+  $("roleTag").textContent =
+    profile.role.replaceAll("_", " ").toUpperCase();
+
+  showOnly(app);
+
+  await loadProfiles();
+}
+
+// LOAD MEMBER DATA
+async function loadProfiles() {
+
+  if (busy) return;
+
+  busy = true;
+  $("refreshButton").disabled = true;
+  $("memberList").replaceChildren();
+
+  message("Loading members...");
+
+  try {
+
+    const { data, error } = await supabase
+      .from("profiles")
+      .select(
+        "id, member_id, full_name, email, role, status, created_at, joined_at"
+      )
+      .order("created_at", { ascending: false })
+      .limit(500);
+
+    if (error) throw error;
+
+    profiles = data || [];
+
+    $("totalCount").textContent = profiles.length;
+    $("pendingCount").textContent =
+      profiles.filter(p => p.status === "pending").length;
+    $("activeCount").textContent =
+      profiles.filter(p => p.status === "active").length;
+    $("rejectedCount").textContent =
+      profiles.filter(p => p.status === "rejected").length;
+
+    renderProfiles();
+
+  } catch (error) {
+
+    profiles = [];
+
+    ["totalCount", "pendingCount", "activeCount", "rejectedCount"]
+      .forEach(id => $(id).textContent = "—");
+
+    message(
+      "Unable to load members: " + (error.message || ""),
+      "error"
+    );
+
+  } finally {
+
+    busy = false;
+    $("refreshButton").disabled = false;
+
+  }
+}
+
+// RENDER MEMBERS AS COMPACT LIST
+function renderProfiles() {
+
+  const query = $("search").value.trim().toLowerCase();
+  const status = $("statusFilter").value;
+  const list = $("memberList");
+
+  list.replaceChildren();
+
+  const filtered = profiles.filter(p => {
+
+    const matchesStatus =
+      status === "all" || p.status === status;
+
+    const searchable = [
+      p.full_name,
+      p.email,
+      p.member_id,
+      p.role,
+      p.status
+    ].join(" ").toLowerCase();
+
+    return matchesStatus && searchable.includes(query);
+  });
+
+  if (!filtered.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = "No members found.";
+    list.appendChild(empty);
+
+    message("No matching member records.", "success");
+    return;
+  }
+
+  message("Showing " + filtered.length + " member(s).", "success");
+
+  filtered.forEach(profile => {
+
+    const row = document.createElement("article");
+    row.className = "member-row";
+
+    const main = document.createElement("div");
+    main.className = "member-main";
+
+    const name = document.createElement("div");
+    name.className = "member-name";
+    name.textContent = safe(profile.full_name);
+
+    const email = document.createElement("div");
+    email.className = "member-email";
+    email.textContent = safe(profile.email);
+
+    main.append(name, email);
+
+    const idBox = document.createElement("div");
+
+    const idLabel = document.createElement("div");
+    idLabel.className = "member-label";
+    idLabel.textContent = "MEMBER ID";
+
+    const idValue = document.createElement("div");
+    idValue.className = "member-id";
+    idValue.textContent = safe(profile.member_id);
+
+    idBox.append(idLabel, idValue);
+
+    const roleBox = document.createElement("div");
+
+    const roleLabel = document.createElement("div");
+    roleLabel.className = "member-label";
+    roleLabel.textContent = "ACCOUNT ROLE";
+
+    const roleValue = document.createElement("div");
+    roleValue.className = "member-name";
+    roleValue.textContent = safe(profile.role);
+
+    roleBox.append(roleLabel, roleValue);
+
+    const statusBox = document.createElement("div");
+
+    const statusLabel = document.createElement("div");
+    statusLabel.className = "member-label";
+    statusLabel.textContent = "STATUS";
+
+    const badge = document.createElement("span");
+    badge.className = "status " + statusClass(profile.status);
+    badge.textContent = safe(profile.status);
+
+    statusBox.append(statusLabel, badge);
+
+    const actions = document.createElement("div");
+    actions.className = "member-actions";
+
+    if (
+      profile.status === "pending" &&
+      profile.role === "member" &&
+      currentProfile &&
+      ["admin", "super_admin"].includes(currentProfile.role)
+    ) {
+
+      const approve = document.createElement("button");
+      approve.className = "btn";
+      approve.textContent = "Approve";
+      approve.type = "button";
+
+      approve.addEventListener("click", () =>
+        reviewMember(profile.member_id, "active", actions)
+      );
+
+      const reject = document.createElement("button");
+      reject.className = "btn btn-danger";
+      reject.textContent = "Reject";
+      reject.type = "button";
+
+      reject.addEventListener("click", () =>
+        reviewMember(profile.member_id, "rejected", actions)
+      );
+
+      actions.append(approve, reject);
+
+    } else {
+
+      const view = document.createElement("span");
+      view.className = "member-id";
+      view.textContent = "—";
+      actions.appendChild(view);
+
+    }
+
+    row.append(main, idBox, roleBox, statusBox, actions);
+    list.appendChild(row);
+
+  });
+}
+
+// REVIEW MEMBERSHIP USING THE EXISTING SECURE RPC
+async function reviewMember(memberId, decision, actions) {
+
+  if (!memberId) {
+    message("Member ID is missing.", "error");
+    return;
+  }
+
+  if (!["active", "rejected"].includes(decision)) return;
+
+  const confirmed = window.confirm(
+    decision === "active"
+      ? "Approve this membership application?"
+      : "Reject this membership application?"
+  );
+
+  if (!confirmed) return;
+
+  const buttons = [...actions.querySelectorAll("button")];
+  buttons.forEach(button => button.disabled = true);
+
+  message("Submitting membership decision...");
+
+  try {
+
+    const { data, error } = await supabase.rpc(
+      "review_membership",
+      {
+        p_member_id: memberId,
+        p_decision: decision
+      }
+    );
+
+    if (error) throw error;
+
+    if (data !== true) {
+      throw new Error(
+        "Database did not confirm the membership update."
+      );
+    }
+
+    message(
+      decision === "active"
+        ? "Membership approved successfully."
+        : "Membership rejected successfully.",
+      "success"
+    );
+
+    await loadProfiles();
+
+  } catch (error) {
+
+    message(
+      "Membership review failed: " + (error.message || ""),
+      "error"
+    );
+
+    buttons.forEach(button => button.disabled = false);
+  }
+}
+
+// SIGN OUT
+async function logout() {
+
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    $("deniedMessage").textContent =
+      "Sign out failed: " + error.message;
+    showOnly(denied);
+    return;
+  }
+
+  currentProfile = null;
+  profiles = [];
+
+  $("memberList").replaceChildren();
+  showOnly(sessionRequired);
+}
+
+$("logoutButton").addEventListener("click", logout);
+$("deniedLogout").addEventListener("click", logout);
+$("refreshButton").addEventListener("click", loadProfiles);
+$("search").addEventListener("input", renderProfiles);
+$("statusFilter").addEventListener("change", renderProfiles);
+
+// INITIALIZE AND CHECK THE EXISTING SESSION
+showOnly(sessionRequired);
+
+verifyAdmin().catch(error => {
+  $("deniedMessage").textContent =
+    "Session verification failed: " + (error.message || "");
+  showOnly(denied);
+});
+
+// Watch for session changes while this page is open
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === "SIGNED_OUT" || !session) {
+    currentProfile = null;
+    showOnly(sessionRequired);
+  }
+});
+
+</script>
+
+</body>
+</html>
