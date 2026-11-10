@@ -1,0 +1,616 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#063b2c">
+<title>Permission Manager | Arewa Lyrics Hub</title>
+
+<style>
+:root{
+  --green:#063b2c;
+  --green2:#087348;
+  --gold:#e7bd43;
+  --bg:#f4f7f5;
+  --white:#fff;
+  --text:#193329;
+  --muted:#718078;
+  --border:#e4ebe6;
+  --red:#b42318;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:Arial,sans-serif;font-size:14px
+}
+button,select{font:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+.topbar{
+  background:var(--green);color:white;padding:17px 20px;
+  display:flex;justify-content:space-between;align-items:center;gap:12px
+}
+.topbar h1{font-size:17px;margin:0 0 4px}
+.topbar p{font-size:11px;color:#c9dfd2;margin:0}
+.top-actions{display:flex;align-items:center;gap:8px}
+.pill{
+  background:#ffffff20;border:1px solid #ffffff40;
+  padding:7px 10px;border-radius:20px;font-size:10px
+}
+.logout{
+  background:transparent;border:1px solid #ffffff70;
+  color:white;padding:8px 11px;border-radius:7px
+}
+.container{max-width:1100px;margin:auto;padding:20px 14px 40px}
+.heading{margin-bottom:17px}
+.heading h2{font-size:21px;margin:0 0 5px}
+.heading p{font-size:12px;color:var(--muted);margin:0}
+.panel{
+  background:white;border:1px solid var(--border);
+  border-radius:12px;padding:16px;margin-bottom:15px
+}
+.panel h3{font-size:15px;margin:0 0 12px}
+.muted{color:var(--muted);font-size:12px;line-height:1.5}
+.notice{
+  padding:11px;border-radius:8px;background:#fff5dc;
+  color:#765600;font-size:12px;line-height:1.5;margin-bottom:12px;
+  overflow-wrap:anywhere
+}
+.notice.error{background:#fff0ed;color:#a12c20}
+.notice.success{background:#e7f7ed;color:#17633a}
+select{
+  width:100%;padding:11px;border:1px solid var(--border);
+  border-radius:8px;background:white;color:var(--text)
+}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.toolbar select{flex:1;min-width:200px}
+.btn{
+  border:0;border-radius:7px;padding:9px 12px;
+  background:var(--green2);color:white;font-size:11px;font-weight:bold
+}
+.btn-light{background:#edf3ef;color:var(--green)}
+.btn-danger{background:#fff0ed;color:var(--red)}
+.btn:disabled{opacity:.5;cursor:wait}
+.permission-group{
+  border:1px solid var(--border);border-radius:10px;
+  padding:13px;margin:12px 0
+}
+.permission-group h4{font-size:13px;margin:0 0 10px;color:var(--green)}
+.permission-item{
+  display:flex;justify-content:space-between;align-items:center;
+  gap:12px;padding:10px 0;border-top:1px solid #edf1ee
+}
+.permission-item:first-of-type{border-top:0}
+.permission-name{font-size:12px;font-weight:bold}
+.permission-description{font-size:10px;color:var(--muted);margin-top:4px}
+.permission-key{font-size:9px;color:#89968e;margin-top:4px}
+.state{
+  font-size:10px;font-weight:bold;padding:6px 8px;
+  border-radius:20px;background:#edf3ef;color:var(--muted)
+}
+.state.granted{background:#e7f7ed;color:#187443}
+.audit-row{
+  padding:11px 0;border-bottom:1px solid var(--border);
+  font-size:11px;line-height:1.6;overflow-wrap:anywhere
+}
+.audit-row:last-child{border-bottom:0}
+.empty{
+  padding:20px;text-align:center;color:var(--muted);
+  border:1px dashed var(--border);border-radius:8px;font-size:12px
+}
+.footer{text-align:center;color:var(--muted);font-size:10px;padding:15px}
+@media(max-width:500px){
+  .topbar{padding:13px}
+  .topbar h1{font-size:14px}
+  .pill{display:none}
+  .container{padding:14px 10px 30px}
+  .panel{padding:12px}
+  .permission-item{align-items:flex-start}
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div>
+    <h1>AREWA LYRICS HUB</h1>
+    <p>Super Admin Permission Manager</p>
+  </div>
+  <div class="top-actions">
+    <span class="pill">SUPER ADMIN</span>
+    <button class="logout" id="logoutButton">Sign Out</button>
+  </div>
+</header>
+
+<main class="container">
+
+  <section id="loading" class="panel">
+    <p class="muted">Verifying Super Admin access...</p>
+  </section>
+
+  <section id="sessionRequired" class="panel" hidden>
+    <h3>Login Required</h3>
+    <p class="muted">Please sign in through the main website.</p>
+    <a href="../login.html" class="btn">Main Login</a>
+  </section>
+
+  <section id="denied" class="panel" hidden>
+    <h3>Access Denied</h3>
+    <p class="muted" id="deniedMessage">
+      Only an active Super Admin can access this page.
+    </p>
+  </section>
+
+  <section id="app" hidden>
+    <div class="heading">
+      <h2>Permission Manager</h2>
+      <p>Grant and revoke individual permissions for administrators and moderators.</p>
+    </div>
+
+    <div id="message" class="notice">Loading permission manager...</div>
+
+    <section class="panel">
+      <h3>Select Administrator</h3>
+      <p class="muted">
+        Select an active Admin or Moderator to view and manage their permissions.
+      </p>
+      <div class="toolbar">
+        <select id="targetSelect">
+          <option value="">Loading administrators...</option>
+        </select>
+        <button class="btn btn-light" id="refreshButton">Refresh</button>
+      </div>
+      <div id="targetInfo" class="muted">No administrator selected.</div>
+    </section>
+
+    <section class="panel">
+      <h3>Available Permissions</h3>
+      <p class="muted">
+        Use Grant to assign an individual permission or Revoke to remove it.
+        Super Admin permissions are not managed here.
+      </p>
+      <div id="permissionList">
+        <div class="empty">Select an administrator first.</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>Permission Audit Log</h3>
+      <p class="muted">
+        Recent permission grants and revocations.
+      </p>
+      <div id="auditList">
+        <div class="empty">Loading audit history...</div>
+      </div>
+    </section>
+  </section>
+
+  <div class="footer">Arewa Lyrics Hub · Super Admin Control</div>
+</main>
+
+<script type="module">
+import { createClient } from
+"https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const SUPABASE_URL =
+"https://vyydpzgkpbefxdxplqla.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+"sb_publishable_rz2cvizCJOnS-qyBOiISsg_sQJk3wCB";
+
+const supabase = createClient(
+  SUPABASE_URL,
+  SUPABASE_PUBLISHABLE_KEY
+);
+
+const $ = id => document.getElementById(id);
+
+let currentUser = null;
+let targets = [];
+let catalog = [];
+let grantedPermissions = new Set();
+let busy = false;
+
+function show(section){
+  ["loading","sessionRequired","denied","app"].forEach(id=>{
+    $(id).hidden = id !== section;
+  });
+}
+
+function notify(text,type=""){
+  const el=$("message");
+  el.textContent=text;
+  el.className="notice"+(type?" "+type:"");
+}
+
+function safe(value){
+  return value == null || value === ""
+    ? "Not provided" : String(value);
+}
+
+function make(tag,className,text){
+  const el=document.createElement(tag);
+  if(className) el.className=className;
+  if(text != null) el.textContent=text;
+  return el;
+}
+
+// ONLY ACTIVE SUPER ADMIN CAN ENTER
+async function verifySuperAdmin(){
+
+  const {data:sessionData,error:sessionError} =
+    await supabase.auth.getSession();
+
+  if(sessionError || !sessionData.session){
+    show("sessionRequired");
+    return;
+  }
+
+  const {data:userData,error:userError} =
+    await supabase.auth.getUser();
+
+  if(userError || !userData.user){
+    show("sessionRequired");
+    return;
+  }
+
+  const {data:profile,error:profileError} = await supabase
+    .from("profiles")
+    .select("id,full_name,email,role,status,member_id")
+    .eq("id",userData.user.id)
+    .maybeSingle();
+
+  if(profileError){
+    $("deniedMessage").textContent =
+      "Unable to verify profile: "+profileError.message;
+    show("denied");
+    return;
+  }
+
+  if(!profile ||
+     profile.role !== "super_admin" ||
+     profile.status !== "active"){
+
+    $("deniedMessage").textContent =
+      "Access denied. Only an active Super Admin can use this page.";
+    show("denied");
+    return;
+  }
+
+  currentUser=userData.user;
+  show("app");
+
+  await loadManager();
+}
+
+// LOAD ACTIVE ADMINISTRATORS AND PERMISSION CATALOG
+async function loadManager(){
+
+  notify("Loading administrators and permissions...");
+
+  try{
+
+    const [targetResult,catalogResult] = await Promise.all([
+
+      supabase.from("profiles")
+        .select("id,member_id,full_name,email,role,status")
+        .in("role",["admin","moderator"])
+        .eq("status","active")
+        .order("full_name",{ascending:true}),
+
+      supabase.from("permission_catalog")
+        .select("permission_key,permission_name,permission_category,description")
+        .order("permission_category")
+        .order("permission_name")
+
+    ]);
+
+    if(targetResult.error) throw targetResult.error;
+    if(catalogResult.error) throw catalogResult.error;
+
+    targets=targetResult.data || [];
+    catalog=catalogResult.data || [];
+
+    renderTargets();
+
+    if(!$("targetSelect").value && targets.length){
+      $("targetSelect").value=targets[0].id;
+    }
+
+    if($("targetSelect").value){
+      await loadSelectedTarget();
+    }else{
+      $("targetInfo").textContent="No active Admin or Moderator found.";
+      $("permissionList").replaceChildren(
+        make("div","empty","No active administrators or moderators found.")
+      );
+    }
+
+    await loadAudit();
+
+    notify("Permission Manager connected successfully.","success");
+
+  }catch(error){
+    notify("Loading failed: "+error.message,"error");
+  }
+}
+
+function renderTargets(){
+
+  const select=$("targetSelect");
+  const previous=select.value;
+
+  select.replaceChildren();
+
+  if(!targets.length){
+    const option=make("option","", "No active Admin/Moderator");
+    option.value="";
+    select.appendChild(option);
+    return;
+  }
+
+  const first=make("option","","Select administrator");
+  first.value="";
+  select.appendChild(first);
+
+  targets.forEach(person=>{
+    const label =
+      safe(person.full_name)+" · "+person.role.toUpperCase()+
+      " · "+safe(person.member_id);
+
+    const option=make("option","",label);
+    option.value=person.id;
+    select.appendChild(option);
+  });
+
+  if(targets.some(p=>p.id===previous)){
+    select.value=previous;
+  }
+}
+
+// LOAD PERMISSIONS FOR SELECTED PERSON
+async function loadSelectedTarget(){
+
+  const targetId=$("targetSelect").value;
+  const person=targets.find(p=>p.id===targetId);
+
+  if(!person){
+    grantedPermissions.clear();
+    $("targetInfo").textContent="No administrator selected.";
+    renderPermissions();
+    return;
+  }
+
+  $("targetInfo").textContent =
+    safe(person.full_name)+" · "+person.role.toUpperCase()+
+    " · "+safe(person.email)+" · "+safe(person.member_id);
+
+  $("permissionList").replaceChildren(
+    make("div","empty","Loading assigned permissions...")
+  );
+
+  try{
+
+    const {data,error}=await supabase
+      .from("admin_user_permissions")
+      .select("permission_key")
+      .eq("user_id",targetId);
+
+    if(error) throw error;
+
+    grantedPermissions=new Set(
+      (data || []).map(item=>item.permission_key)
+    );
+
+    renderPermissions();
+
+  }catch(error){
+    $("permissionList").replaceChildren(
+      make("div","notice error","Unable to load permissions: "+error.message)
+    );
+  }
+}
+
+// DISPLAY PERMISSION GROUPS
+function renderPermissions(){
+
+  const container=$("permissionList");
+  container.replaceChildren();
+
+  if(!catalog.length){
+    container.appendChild(
+      make("div","empty","No permissions found in permission catalog.")
+    );
+    return;
+  }
+
+  const groups={};
+
+  catalog.forEach(permission=>{
+    const category=permission.permission_category || "Other";
+    if(!groups[category]) groups[category]=[];
+    groups[category].push(permission);
+  });
+
+  Object.entries(groups).forEach(([category,items])=>{
+
+    const group=make("div","permission-group");
+    group.appendChild(make("h4","",category));
+
+    items.forEach(permission=>{
+
+      const row=make("div","permission-item");
+      const details=make("div","");
+      details.appendChild(make("div","permission-name",
+        permission.permission_name));
+
+      details.appendChild(make("div","permission-description",
+        permission.description || "No description available."));
+
+      details.appendChild(make("div","permission-key",
+        permission.permission_key));
+
+      const granted=grantedPermissions.has(permission.permission_key);
+      const action=make("button",
+        granted?"btn btn-danger":"btn",
+        granted?"Revoke":"Grant");
+
+      action.type="button";
+      action.disabled=busy;
+
+      action.addEventListener("click",()=>{
+        changePermission(permission.permission_key,granted,action);
+      });
+
+      const state=make("span",
+        granted?"state granted":"state",
+        granted?"GRANTED":"NOT GRANTED");
+
+      const right=make("div","");
+      right.style.display="flex";
+      right.style.alignItems="center";
+      right.style.gap="7px";
+      right.append(state,action);
+
+      row.append(details,right);
+      group.appendChild(row);
+    });
+
+    container.appendChild(group);
+  });
+}
+
+// GRANT OR REVOKE USING SECURE DATABASE RPC
+async function changePermission(permissionKey,isGranted,button){
+
+  if(busy || !currentUser) return;
+
+  const targetId=$("targetSelect").value;
+  if(!targetId) return;
+
+  const person=targets.find(p=>p.id===targetId);
+  if(!person) return;
+
+  const action=isGranted?"revoke":"grant";
+
+  if(!window.confirm(
+    (isGranted?"Remove":"Grant")+" permission '"+permissionKey+
+    "' for "+safe(person.full_name)+"?"
+  )) return;
+
+  busy=true;
+  button.disabled=true;
+  notify("Processing "+action+" request...");
+
+  try{
+
+    const functionName=isGranted
+      ?"revoke_admin_permission"
+      :"grant_admin_permission";
+
+    const {data,error}=await supabase.rpc(functionName,{
+      target_user_id:targetId,
+      requested_permission:permissionKey
+    });
+
+    if(error) throw error;
+    if(data!==true) throw new Error("Database did not confirm the action.");
+
+    await loadSelectedTarget();
+    await loadAudit();
+
+    notify(
+      isGranted
+        ?"Permission revoked successfully."
+        :"Permission granted successfully.",
+      "success"
+    );
+
+  }catch(error){
+    notify("Permission action failed: "+error.message,"error");
+  }finally{
+    busy=false;
+    renderPermissions();
+  }
+}
+
+// SUPER ADMIN ONLY AUDIT LOG
+async function loadAudit(){
+
+  const list=$("auditList");
+  list.replaceChildren(make("div","empty","Loading audit history..."));
+
+  try{
+
+    const {data,error}=await supabase
+      .from("admin_permission_audit_logs")
+      .select("actor_id,target_user_id,permission_key,action,created_at")
+      .order("created_at",{ascending:false})
+      .limit(100);
+
+    if(error) throw error;
+
+    list.replaceChildren();
+
+    if(!data || !data.length){
+      list.appendChild(make("div","empty","No permission activity recorded yet."));
+      return;
+    }
+
+    data.forEach(log=>{
+
+      const row=make("div","audit-row");
+
+      const title=make("strong","",
+        log.action.toUpperCase()+" · "+log.permission_key);
+
+      const actor=make("div","",
+        "Performed by: "+log.actor_id);
+
+      const target=make("div","",
+        "Target user: "+log.target_user_id);
+
+      const date=make("div","",
+        "Date: "+new Date(log.created_at).toLocaleString());
+
+      row.append(title,actor,target,date);
+      list.appendChild(row);
+    });
+
+  }catch(error){
+    list.replaceChildren(
+      make("div","notice error","Audit log could not load: "+error.message)
+    );
+  }
+}
+
+// EVENTS
+$("targetSelect").addEventListener("change",loadSelectedTarget);
+$("refreshButton").addEventListener("click",loadManager);
+
+$("logoutButton").addEventListener("click",async()=>{
+  const {error}=await supabase.auth.signOut();
+
+  if(error){
+    notify("Sign out failed: "+error.message,"error");
+    return;
+  }
+
+  currentUser=null;
+  show("sessionRequired");
+});
+
+// INITIALIZE
+show("loading");
+
+verifySuperAdmin().catch(error=>{
+  $("deniedMessage").textContent=
+    "Verification failed: "+error.message;
+  show("denied");
+});
+</script>
+</body>
+  </html>
+  
