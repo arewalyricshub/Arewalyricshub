@@ -1,0 +1,736 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#063b2c">
+<title>Super Admin Control Center | Arewa Lyrics Hub</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root {
+  --green:#063b2c;
+  --green2:#087348;
+  --gold:#e7bd43;
+  --bg:#f3f6f4;
+  --white:#fff;
+  --text:#17251e;
+  --muted:#68766e;
+  --border:#e1e9e3;
+  --red:#bd3030;
+}
+* {box-sizing:border-box}
+body {
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+header {
+  background:var(--green);
+  color:white;
+  padding:20px;
+  border-bottom:4px solid var(--gold);
+}
+.header-inner {
+  max-width:1200px;
+  margin:auto;
+}
+header h1 {margin:0 0 6px;font-size:23px}
+header p {margin:0;color:#dce9e1;font-size:13px}
+main {max-width:1200px;margin:22px auto;padding:0 14px}
+.panel {
+  background:white;
+  border:1px solid var(--border);
+  border-radius:13px;
+  padding:17px;
+  margin-bottom:17px;
+}
+.status {
+  display:inline-block;
+  padding:7px 11px;
+  border-radius:20px;
+  background:#e5f5eb;
+  color:#12633b;
+  font-size:12px;
+  font-weight:bold;
+}
+.tabs {
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:16px;
+}
+.tabs button {
+  background:white;
+  border:1px solid var(--border);
+  color:var(--green);
+}
+button {
+  cursor:pointer;
+  border:0;
+  border-radius:8px;
+  padding:10px 13px;
+  font-weight:bold;
+  background:var(--green);
+  color:white;
+}
+button:hover {opacity:.9}
+button:disabled {opacity:.5;cursor:not-allowed}
+button.secondary {background:#e8eee9;color:var(--green)}
+button.danger {background:var(--red);color:white}
+button.gold {background:var(--gold);color:#332600}
+.tabs button.active {background:var(--green);color:white}
+input,select,textarea {
+  width:100%;
+  padding:11px;
+  border:1px solid #d7e1d9;
+  border-radius:8px;
+  font-size:14px;
+  background:white;
+  color:var(--text);
+}
+label {
+  display:block;
+  font-size:13px;
+  font-weight:bold;
+  margin:12px 0 6px;
+}
+.search {margin:12px 0}
+.table-wrap {overflow-x:auto}
+table {width:100%;border-collapse:collapse;min-width:700px}
+th,td {
+  text-align:left;
+  padding:11px 9px;
+  border-bottom:1px solid var(--border);
+  font-size:13px;
+  vertical-align:middle;
+}
+th {background:#f4f8f5;color:var(--green)}
+td button {margin:3px 2px;font-size:12px}
+.small {font-size:12px;color:var(--muted)}
+.hidden {display:none!important}
+.message {
+  padding:12px;
+  border-radius:8px;
+  margin:12px 0;
+  font-size:13px;
+  white-space:pre-wrap;
+}
+.message.error {background:#fff0f0;color:#a32121}
+.message.success {background:#e9f7ed;color:#155b32}
+.message.info {background:#eef4f0;color:#294a38}
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;
+}
+.stat {
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:14px;
+}
+.stat strong {display:block;font-size:24px;color:var(--green)}
+.stat span {font-size:12px;color:var(--muted)}
+.permission-list {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:9px;
+  margin-top:14px;
+}
+.permission-item {
+  border:1px solid var(--border);
+  padding:10px;
+  border-radius:8px;
+  display:flex;
+  gap:9px;
+  align-items:flex-start;
+  font-size:13px;
+}
+.permission-item input {width:auto;margin-top:2px}
+.permission-item label {margin:0;font-weight:normal}
+footer {
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  padding:20px;
+}
+@media(max-width:600px) {
+  header h1 {font-size:19px}
+  .panel {padding:13px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1>AREWA LYRICS HUB</h1>
+    <p>Super Admin Control Center</p>
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <div id="authStatus" class="status">Checking Super Admin access...</div>
+    <p id="welcome" class="small"></p>
+    <div id="globalMessage"></div>
+    <button id="refreshBtn" class="secondary" type="button">Refresh Data</button>
+    <button id="logoutBtn" class="danger" type="button">Logout</button>
+  </section>
+
+  <section id="dashboard" class="hidden">
+
+    <div class="grid panel">
+      <div class="stat">
+        <strong id="totalMembers">0</strong>
+        <span>Total profiles</span>
+      </div>
+      <div class="stat">
+        <strong id="activeMembers">0</strong>
+        <span>Active profiles</span>
+      </div>
+      <div class="stat">
+        <strong id="adminCount">0</strong>
+        <span>Admins</span>
+      </div>
+      <div class="stat">
+        <strong id="moderatorCount">0</strong>
+        <span>Moderators</span>
+      </div>
+    </div>
+
+    <nav class="tabs">
+      <button class="active" data-tab="membersTab">Members</button>
+      <button data-tab="rolesTab">Roles & Permissions</button>
+      <button data-tab="auditTab">Audit Logs</button>
+    </nav>
+
+    <!-- MEMBERS -->
+    <section id="membersTab" class="panel tab-content">
+      <h2>Member Management</h2>
+      <p class="small">Search and view member profiles. Role changes are handled through the secure RPC.</p>
+
+      <input id="memberSearch" class="search"
+        placeholder="Search name, member ID, role or account type...">
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Member</th>
+              <th>Member ID</th>
+              <th>Account Type</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Access</th>
+            </tr>
+          </thead>
+          <tbody id="membersTable">
+            <tr><td colspan="6">Loading members...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ROLES AND PERMISSIONS -->
+    <section id="rolesTab" class="panel tab-content hidden">
+      <h2>Roles & Permissions</h2>
+      <p class="small">Choose an active Admin or Moderator to manage their permissions.</p>
+
+      <label for="permissionUser">Select Admin / Moderator</label>
+      <select id="permissionUser">
+        <option value="">Select user</option>
+      </select>
+
+      <div id="permissionMessage"></div>
+      <div id="permissionList" class="permission-list">
+        <p class="small">Select an Admin or Moderator.</p>
+      </div>
+
+      <button id="savePermissions" type="button">Save Permission Changes</button>
+    </section>
+
+    <!-- AUDIT -->
+    <section id="auditTab" class="panel tab-content hidden">
+      <h2>Security & Audit Logs</h2>
+      <p class="small">These records show administrative actions saved by the database.</p>
+
+      <h3>Role Changes</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Actor ID</th>
+              <th>Target ID</th>
+              <th>Old Role</th>
+              <th>New Role</th>
+            </tr>
+          </thead>
+          <tbody id="roleAuditTable">
+            <tr><td colspan="5">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Permission Changes</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Actor ID</th>
+              <th>Target ID</th>
+              <th>Permission</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="permissionAuditTable">
+            <tr><td colspan="5">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Membership Access History</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Member ID</th>
+              <th>Action</th>
+              <th>Reason</th>
+              <th>Actor ID</th>
+            </tr>
+          </thead>
+          <tbody id="membershipAuditTable">
+            <tr><td colspan="5">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </section>
+</main>
+
+<footer>
+  Arewa Lyrics Hub — Secure Administration
+</footer>
+
+<script>
+(() => {
+  "use strict";
+
+  const SUPABASE_URL = "https://vyydpzgkpbefxdxplqla.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_rz2cvizCJOnS-qyBOiISsg_sQJk3wCB";
+
+  // The dashboard name is manage-membership-access.
+  // Its actual deployed URL slug is rapid-responder.
+  const MEMBERSHIP_FUNCTION_URL =
+    SUPABASE_URL + "/functions/v1/rapid-responder";
+
+  const { createClient } = window.supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentUser = null;
+  let profiles = [];
+  let catalog = [];
+  let currentPermissions = [];
+  let selectedPermissionUser = "";
+  let pendingPermissionChanges = {};
+
+  const $ = (id) => document.getElementById(id);
+
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    })[char]);
+  }
+
+  function showMessage(message, type = "info", target = "globalMessage") {
+    const el = $(target);
+    if (!el) return;
+    el.innerHTML = `<div class="message ${type}">${escapeHTML(message)}</div>`;
+  }
+
+  function clearMessage(target = "globalMessage") {
+    const el = $(target);
+    if (el) el.innerHTML = "";
+  }
+
+  function formatDate(value) {
+    if (!value) return "—";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString();
+  }
+
+  async function requireSuperAdmin() {
+    const { data, error } = await db.auth.getSession();
+
+    if (error || !data.session) {
+      window.location.href = "../login.html";
+      return false;
+    }
+
+    currentUser = data.session.user;
+
+    const { data: profile, error: profileError } = await db
+      .from("profiles")
+      .select("id, full_name, role, status")
+      .eq("id", currentUser.id)
+      .maybeSingle();
+
+    if (
+      profileError ||
+      !profile ||
+      profile.role !== "super_admin" ||
+      profile.status !== "active"
+    ) {
+      $("authStatus").textContent = "Access denied";
+      showMessage(
+        "This page is restricted to an active Super Admin account.",
+        "error"
+      );
+      await db.auth.signOut();
+      return false;
+    }
+
+    $("authStatus").textContent = "Super Admin Verified";
+    $("welcome").textContent = "Welcome, " + (profile.full_name || "Super Admin");
+    $("dashboard").classList.remove("hidden");
+
+    return true;
+  }
+
+  async function loadProfiles() {
+    const { data, error } = await db
+      .from("profiles")
+      .select("id, full_name, member_id, role, status, account_type, membership_type, created_at")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    profiles = data || [];
+    renderMembers();
+    updateStats();
+    loadPermissionUsers();
+  }
+
+  function updateStats() {
+    $("totalMembers").textContent = profiles.length;
+    $("activeMembers").textContent =
+      profiles.filter(p => p.status === "active").length;
+    $("adminCount").textContent =
+      profiles.filter(p => p.role === "admin" && p.status === "active").length;
+    $("moderatorCount").textContent =
+      profiles.filter(p => p.role === "moderator" && p.status === "active").length;
+  }
+
+  async function loadAccessRecords() {
+    const { data, error } = await db
+      .from("membership_access_controls")
+      .select("user_id, removed_at, restored_at");
+
+    if (error) throw error;
+
+    return data || [];
+  }
+
+  async function renderMembers() {
+    const tbody = $("membersTable");
+    tbody.innerHTML = `<tr><td colspan="6">Loading...</td></tr>`;
+
+    let accessRecords = [];
+
+    try {
+      accessRecords = await loadAccessRecords();
+    } catch (error) {
+      tbody.innerHTML =
+        `<tr><td colspan="6">Could not load membership access records: ${escapeHTML(error.message)}</td></tr>`;
+      return;
+    }
+
+    const accessMap = new Map(
+      accessRecords.map(record => [record.user_id, record])
+    );
+
+    const search = $("memberSearch").value.trim().toLowerCase();
+
+    const filtered = profiles.filter(p => {
+      const searchable = [
+        p.full_name,
+        p.member_id,
+        p.role,
+        p.status,
+        p.account_type,
+        p.membership_type
+      ].join(" ").toLowerCase();
+
+      return searchable.includes(search);
+    });
+
+    if (!filtered.length) {
+      tbody.innerHTML = `<tr><td colspan="6">No matching profiles found.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = "";
+
+    filtered.forEach(profile => {
+      const record = accessMap.get(profile.id);
+      const removed = record && !record.restored_at;
+
+      const row = document.createElement("tr");
+
+      const identity = document.createElement("td");
+      identity.textContent = profile.full_name || "Unnamed member";
+
+      const memberId = document.createElement("td");
+      memberId.textContent = profile.member_id || "—";
+
+      const accountType = document.createElement("td");
+      accountType.textContent = profile.account_type || "—";
+
+      const roleCell = document.createElement("td");
+
+      if (profile.role === "super_admin") {
+        roleCell.textContent = "super_admin";
+      } else {
+        const select = document.createElement("select");
+
+        ["member", "moderator", "admin"].forEach(role => {
+          const option = document.createElement("option");
+          option.value = role;
+          option.textContent = role;
+          option.selected = profile.role === role;
+          select.appendChild(option);
+        });
+
+        select.disabled = profile.status !== "active";
+
+        const save = document.createElement("button");
+        save.textContent = "Save role";
+        save.className = "secondary";
+
+        save.addEventListener("click", () => changeRole(profile, select.value));
+
+        roleCell.append(select, save);
+      }
+
+      const statusCell = document.createElement("td");
+      statusCell.textContent = profile.status || "—";
+
+      const accessCell = document.createElement("td");
+
+      if (profile.role !== "member") {
+        accessCell.textContent = "Not applicable";
+      } else if (removed) {
+        const restore = document.createElement("button");
+        restore.textContent = "Restore";
+        restore.className = "gold";
+        restore.addEventListener("click", () => manageMembership(profile, "restore"));
+        accessCell.appendChild(restore);
+      } else if (profile.status === "active") {
+        const remove = document.createElement("button");
+        remove.textContent = "Remove";
+        remove.className = "danger";
+        remove.addEventListener("click", () => manageMembership(profile, "remove"));
+        accessCell.appendChild(remove);
+      } else {
+        accessCell.textContent = "Active members only";
+      }
+
+      row.append(identity, memberId, accountType, roleCell, statusCell, accessCell);
+      tbody.appendChild(row);
+    });
+  }
+
+  async function changeRole(profile, newRole) {
+    if (!["member", "admin", "moderator"].includes(newRole)) return;
+    if (profile.role === newRole) return;
+
+    const confirmed = confirm(
+      `Change ${profile.full_name || profile.member_id} role from ${profile.role} to ${newRole}?`
+    );
+
+    if (!confirmed) return;
+
+    showMessage("Updating role...", "info");
+
+    const { error } = await db.rpc("manage_admin_role", {
+      p_target_user_id: profile.id,
+      p_new_role: newRole
+    });
+
+    if (error) {
+      showMessage("Role update failed: " + error.message, "error");
+      return;
+    }
+
+    showMessage("Role updated successfully.", "success");
+    await loadProfiles();
+    await loadAuditLogs();
+  }
+
+  async function manageMembership(profile, action) {
+    const actionText = action === "remove" ? "remove access for" : "restore access for";
+
+    const confirmed = confirm(
+      `Are you sure you want to ${actionText} ${profile.full_name || profile.member_id}?`
+    );
+
+    if (!confirmed) return;
+
+    let reason = "";
+
+    if (action === "remove") {
+      reason = prompt("Enter the reason for removing membership access:") || "";
+      if (!reason.trim()) {
+        alert("A reason is required. No change was made.");
+        return;
+      }
+    } else {
+      reason = prompt("Optional restoration note:") || "";
+    }
+
+    const { data: sessionData } = await db.auth.getSession();
+    const session = sessionData.session;
+
+    if (!session?.access_token) {
+      showMessage("Your session has expired. Please log in again.", "error");
+      return;
+    }
+
+    showMessage("Processing membership request...", "info");
+
+    try {
+      const response = await fetch(MEMBERSHIP_FUNCTION_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + session.access_token,
+          "apikey": SUPABASE_KEY
+        },
+        body: JSON.stringify({
+          action,
+          target_user_id: profile.id,
+          reason
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Membership operation failed.");
+      }
+
+      showMessage(result.message || "Membership access updated.", "success");
+
+      if (result.audit_warning) {
+        showMessage(
+          "The access change succeeded, but the audit log needs attention.",
+          "info"
+        );
+      }
+
+      await loadProfiles();
+      await loadAuditLogs();
+
+    } catch (error) {
+      showMessage("Membership operation failed: " + error.message, "error");
+    }
+  }
+
+  async function loadPermissionUsers() {
+    const select = $("permissionUser");
+    const previous = select.value;
+
+    select.innerHTML = `<option value="">Select user</option>`;
+
+    profiles
+      .filter(p =>
+        p.status === "active" &&
+        ["admin", "moderator"].includes(p.role)
+      )
+      .forEach(profile => {
+        const option = document.createElement("option");
+        option.value = profile.id;
+        option.textContent =
+          `${profile.full_name || "Unnamed"} — ${profile.member_id || ""} (${profile.role})`;
+        select.appendChild(option);
+      });
+
+    if (profiles.some(p => p.id === previous && p.status === "active")) {
+      select.value = previous;
+    }
+  }
+
+  async function loadPermissionCatalog() {
+    const { data, error } = await db
+      .from("permission_catalog")
+      .select("permission_key, permission_name, permission_category, description")
+      .order("permission_category")
+      .order("permission_name");
+
+    if (error) throw error;
+    catalog = data || [];
+  }
+
+  async function showPermissions(userId) {
+    selectedPermissionUser = userId;
+    pendingPermissionChanges = {};
+    $("permissionList").innerHTML = "";
+
+    if (!userId) {
+      $("permissionList").innerHTML =
+        `<p class="small">Select an Admin or Moderator.</p>`;
+      return;
+    }
+
+    showMessage("Loading permissions...", "info", "permissionMessage");
+
+    const { data, error } = await db
+      .from("admin_user_permissions")
+      .select("permission_key")
+      .eq("user_id", userId);
+
+    if (error) {
+      showMessage("Could not load permissions: " + error.message, "error", "permissionMessage");
+      return;
+    }
+
+    currentPermissions = (data || []).map(item => item.permission_key);
+    clearMessage("permissionMessage");
+
+    const list = $("permissionList");
+    list.innerHTML = "";
+
+    if (!catalog.length) {
+      list.textContent = "No permissions found in the catalog.";
+      return;
+    }
+
+    catalog.forEach(permission => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "permission-item";
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.id = "perm-" + permission.permission_key;
+      checkbox.checked = currentPermissions.includes(permission.permission_key);
+
+      checkbox.addEventListener("change", () => {
+        pendingPermissionChanges[permission.permission_key] = checkbox.checked;
+      });
+
+      const label = document.createElement("label");
+      label.html
