@@ -733,4 +733,209 @@ footer {
       });
 
       const label = document.createElement("label");
-      label.html
+      label.htmlFor = checkbox.id;
+      label.textContent =
+        `${permission.permission_name || permission.permission_key} — ${permission.permission_key}`;
+
+      wrapper.append(checkbox, label);
+      list.appendChild(wrapper);
+    });
+  }
+
+  async function savePermissions() {
+    if (!selectedPermissionUser) {
+      showMessage("Select an Admin or Moderator first.", "error", "permissionMessage");
+      return;
+    }
+
+    const target = profiles.find(p => p.id === selectedPermissionUser);
+
+    if (!target || target.status !== "active" ||
+        !["admin", "moderator"].includes(target.role)) {
+      showMessage("This account is not an active Admin or Moderator.", "error", "permissionMessage");
+      return;
+    }
+
+    const changes = Object.entries(pendingPermissionChanges);
+
+    if (!changes.length) {
+      showMessage("There are no permission changes to save.", "info", "permissionMessage");
+      return;
+    }
+
+    $("savePermissions").disabled = true;
+
+    try {
+      for (const [permissionKey, shouldGrant] of changes) {
+        const { error } = await db.rpc(
+          shouldGrant ? "grant_admin_permission" : "revoke_admin_permission",
+          {
+            target_user_id: selectedPermissionUser,
+            requested_permission: permissionKey
+          }
+        );
+
+        if (error) throw error;
+      }
+
+      showMessage("Permission changes saved successfully.", "success", "permissionMessage");
+      await showPermissions(selectedPermissionUser);
+      await loadAuditLogs();
+
+    } catch (error) {
+      showMessage("Permission update failed: " + error.message, "error", "permissionMessage");
+    } finally {
+      $("savePermissions").disabled = false;
+    }
+  }
+
+  async function loadAuditLogs() {
+    const roleBody = $("roleAuditTable");
+    const permissionBody = $("permissionAuditTable");
+    const membershipBody = $("membershipAuditTable");
+
+    roleBody.innerHTML = `<tr><td colspan="5">Loading...</td></tr>`;
+    permissionBody.innerHTML = `<tr><td colspan="5">Loading...</td></tr>`;
+    membershipBody.innerHTML = `<tr><td colspan="5">Loading...</td></tr>`;
+
+    const [roles, permissions, memberships] = await Promise.all([
+      db.from("admin_role_audit_logs")
+        .select("actor_id, target_user_id, old_role, new_role, created_at")
+        .order("created_at", { ascending: false })
+        .limit(50),
+
+      db.from("admin_permission_audit_logs")
+        .select("actor_id, target_user_id, permission_key, action, created_at")
+        .order("created_at", { ascending: false })
+        .limit(50),
+
+      db.from("membership_access_audit_logs")
+        .select("actor_id, target_user_id, member_id, action, reason, created_at")
+        .order("created_at", { ascending: false })
+        .limit(50)
+    ]);
+
+    roleBody.innerHTML = "";
+    if (roles.error) {
+      roleBody.innerHTML = `<tr><td colspan="5">${escapeHTML(roles.error.message)}</td></tr>`;
+    } else if (!(roles.data || []).length) {
+      roleBody.innerHTML = `<tr><td colspan="5">No role audit records yet.</td></tr>`;
+    } else {
+      roles.data.forEach(item => {
+        const tr = document.createElement("tr");
+        [
+          formatDate(item.created_at),
+          item.actor_id,
+          item.target_user_id,
+          item.old_role,
+          item.new_role
+        ].forEach(value => {
+          const td = document.createElement("td");
+          td.textContent = value || "—";
+          tr.appendChild(td);
+        });
+        roleBody.appendChild(tr);
+      });
+    }
+
+    permissionBody.innerHTML = "";
+    if (permissions.error) {
+      permissionBody.innerHTML =
+        `<tr><td colspan="5">${escapeHTML(permissions.error.message)}</td></tr>`;
+    } else if (!(permissions.data || []).length) {
+      permissionBody.innerHTML =
+        `<tr><td colspan="5">No permission audit records yet.</td></tr>`;
+    } else {
+      permissions.data.forEach(item => {
+        const tr = document.createElement("tr");
+        [
+          formatDate(item.created_at),
+          item.actor_id,
+          item.target_user_id,
+          item.permission_key,
+          item.action
+        ].forEach(value => {
+          const td = document.createElement("td");
+          td.textContent = value || "—";
+          tr.appendChild(td);
+        });
+        permissionBody.appendChild(tr);
+      });
+    }
+
+    membershipBody.innerHTML = "";
+    if (memberships.error) {
+      membershipBody.innerHTML =
+        `<tr><td colspan="5">${escapeHTML(memberships.error.message)}</td></tr>`;
+    } else if (!(memberships.data || []).length) {
+      membershipBody.innerHTML =
+        `<tr><td colspan="5">No membership access audit records yet.</td></tr>`;
+    } else {
+      memberships.data.forEach(item => {
+        const tr = document.createElement("tr");
+        [
+          formatDate(item.created_at),
+          item.member_id,
+          item.action,
+          item.reason || "—",
+          item.actor_id
+        ].forEach(value => {
+          const td = document.createElement("td");
+          td.textContent = value || "—";
+          tr.appendChild(td);
+        });
+        membershipBody.appendChild(tr);
+      });
+    }
+  }
+
+  async function refreshAll() {
+    clearMessage();
+    showMessage("Refreshing Control Center...", "info");
+
+    try {
+      await loadProfiles();
+      await loadPermissionCatalog();
+      await loadAuditLogs();
+      showMessage("Control Center data refreshed.", "success");
+    } catch (error) {
+      showMessage("Loading failed: " + error.message, "error");
+    }
+  }
+
+  document.querySelectorAll(".tabs button").forEach(button => {
+    button.addEventListener("click", () => {
+      document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(section => section.classList.add("hidden"));
+
+      button.classList.add("active");
+      $(button.dataset.tab).classList.remove("hidden");
+    });
+  });
+
+  $("memberSearch").addEventListener("input", renderMembers);
+  $("permissionUser").addEventListener("change", event => showPermissions(event.target.value));
+  $("savePermissions").addEventListener("click", savePermissions);
+  $("refreshBtn").addEventListener("click", refreshAll);
+
+  $("logoutBtn").addEventListener("click", async () => {
+    await db.auth.signOut();
+    window.location.href = "../login.html";
+  });
+
+  async function start() {
+    try {
+      const allowed = await requireSuperAdmin();
+      if (!allowed) return;
+      await refreshAll();
+    } catch (error) {
+      showMessage("Could not start Control Center: " + error.message, "error");
+    }
+  }
+
+  start();
+})();
+</script>
+
+</body>
+</html>
